@@ -1,0 +1,149 @@
+import axios from "axios"
+
+export const apiClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "/api",
+  timeout: 10000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+})
+
+// Mock data awal untuk demo & verifikasi spesifikasi
+export const INITIAL_CAMPAIGNS = [
+  {
+    id: "cmp-001",
+    title: "Tanggap Darurat Gempa Bumi Cianjur & Bantuan Medis",
+    description:
+      "Penggalangan dana terdistribusi berbasis smart contract untuk suplai medis, tenda darurat, dan makanan pokok bagi korban gempa.",
+    story:
+      "Gempa bumi berkekuatan 5.6 SR melanda wilayah Cianjur dan sekitarnya. Ratusan keluarga kehilangan tempat tinggal dan fasilitas kesehatan darurat sangat membutuhkan pasokan obat-obatan dan tenda isolasi. Seluruh donasi yang terkumpul akan langsung disalurkan dengan bukti hash on-chain yang transparan.",
+    category: "Gempa Bumi",
+    targetAmount: 150000000,
+    collectedAmount: 98500000,
+    deadline: "2026-12-15T23:59:59Z",
+    walletAddress: "0x3A2c4E80D21683E2eF4410915f0133cAA2b04f14",
+    imageUrl: "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=800&q=80",
+    status: "AKTIF",
+  },
+  {
+    id: "cmp-002",
+    title: "Bantuan Logistik Korban Banjir Bandang Demak",
+    description:
+      "Distribusi perahu karet, genset listrik, serta dapur umum untuk warga yang terisolasi akibat tanggul sungai jebol.",
+    story:
+      "Tanggul sungai yang jebol mengakibatkan ribuan rumah terendam hingga ketinggian 2 meter. Donasi digunakan untuk pengadaan bahan makanan instan, air bersih, serta selimut yang dapat dipantau oleh setiap donatur secara publik.",
+    category: "Banjir",
+    targetAmount: 85000000,
+    collectedAmount: 62400000,
+    deadline: "2026-12-01T23:59:59Z",
+    walletAddress: "0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7",
+    imageUrl: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80",
+    status: "AKTIF",
+  },
+  {
+    id: "cmp-003",
+    title: "Evakuasi & Masker Udara Erupsi Gunung Marapi",
+    description:
+      "Penyediaan masker N95, pembersih mata, dan logistik posko pengungsian warga di lereng gunung Marapi.",
+    story:
+      "Aktivitas erupsi vulkanik mengeluarkan abu pekat yang membahayakan pernapasan masyarakat sekitar. Dana difokuskan untuk pembelian alat pelindung diri pernapasan dan pemulihan sanitasi darurat.",
+    category: "Erupsi Vulkanik",
+    targetAmount: 50000000,
+    collectedAmount: 43200000,
+    deadline: "2026-11-30T23:59:59Z",
+    walletAddress: "0x0165878A594ca255338adfa4d48449f69242Eb8F",
+    imageUrl: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80",
+    status: "AKTIF",
+  },
+]
+
+export const INITIAL_AUDIT_LOGS = [
+  {
+    txHash: "0x789a456bc12de34fa567890123456789abcdef0123456789abcdef0123456789",
+    timestamp: "2026-11-17 10:45:12",
+    campaignId: "cmp-001",
+    donorWallet: "0x71C...9A23",
+    donorFullWallet: "0x71C267327d7C25Ffc85B5F454F6578C00aE59A23",
+    amount: 500000,
+    status: "Confirmed",
+    network: "Sepolia",
+  },
+  {
+    txHash: "0x987f654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba",
+    timestamp: "2026-11-17 09:12:04",
+    campaignId: "cmp-002",
+    donorWallet: "0x3B4...8E11",
+    donorFullWallet: "0x3B49776d6Dbf7f01ED13B2108B2c43e745678E11",
+    amount: 1000000,
+    status: "Confirmed",
+    network: "Sepolia",
+  },
+  {
+    txHash: "0x456cde78901234567890abcdef1234567890abcdef1234567890abcdef123456",
+    timestamp: "2026-11-16 19:30:45",
+    campaignId: "cmp-001",
+    donorWallet: "0xF21...44D9",
+    donorFullWallet: "0xF2109867564738291029384756473829102944D9",
+    amount: 250000,
+    status: "Confirmed",
+    network: "Sepolia",
+  },
+  {
+    txHash: "0x123abc456def789abc123def456abc789def123abc456def789abc123def456a",
+    timestamp: "2026-11-16 16:15:22",
+    campaignId: "cmp-003",
+    donorWallet: "0x67A...12C0",
+    donorFullWallet: "0x67A54321fedcba9876543210123456789abcdef0",
+    amount: 750000,
+    status: "Confirmed",
+    network: "Sepolia",
+  },
+]
+
+export async function fetchCampaigns() {
+  try {
+    const res = await apiClient.get("/campaigns")
+    return res.data
+  } catch {
+    return INITIAL_CAMPAIGNS
+  }
+}
+
+export async function fetchCampaignById(id) {
+  try {
+    const res = await apiClient.get(`/campaigns/${id}`)
+    return res.data
+  } catch {
+    return INITIAL_CAMPAIGNS.find((c) => c.id === id) || INITIAL_CAMPAIGNS[0]
+  }
+}
+
+export async function fetchAuditLogs() {
+  try {
+    const res = await apiClient.get("/audit/logs")
+    return res.data
+  } catch {
+    return INITIAL_AUDIT_LOGS
+  }
+}
+
+/**
+ * Inisiasi Transaksi Donasi ke Backend / Midtrans Snap Token
+ */
+export async function createMidtransTransaction({ campaignId, amount, donorName, donorEmail }) {
+  try {
+    const res = await apiClient.post("/donations/snap-token", {
+      campaignId,
+      amount,
+      donorName,
+      donorEmail,
+    })
+    return res.data
+  } catch {
+    // Demo sandbox dummy token jika backend belum running
+    return {
+      token: "dummy-snap-token-" + Date.now(),
+      orderId: `DONASI-${campaignId}-${Date.now()}`,
+    }
+  }
+}
