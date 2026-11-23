@@ -14,16 +14,26 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { formatRupiah } from "@/lib/formatters"
 import { createMidtransTransaction } from "@/services/api"
+import { useAuth } from "@/context/AuthContext"
 
 const PRESET_AMOUNTS = [25000, 50000, 100000, 250000, 500000]
 
 export default function MidtransSnapModal({ isOpen, onClose, campaign, onDonationSuccess }) {
+  const { user } = useAuth()
   const [amount, setAmount] = useState(50000)
-  const [donorName, setDonorName] = useState("")
-  const [donorEmail, setDonorEmail] = useState("")
+  const [donorName, setDonorName] = useState(user?.name || "")
+  const [donorEmail, setDonorEmail] = useState(user?.email || "")
   const [isLoading, setIsLoading] = useState(false)
   const [statusMessage, setStatusMessage] = useState(null)
   const [isSuccess, setIsSuccess] = useState(false)
+
+  // Update donorName and donorEmail when user changes or modal opens
+  React.useEffect(() => {
+    if (user) {
+      if (user.name) setDonorName(user.name)
+      if (user.email) setDonorEmail(user.email)
+    }
+  }, [user, isOpen])
 
   const handlePresetClick = (val) => {
     setAmount(val)

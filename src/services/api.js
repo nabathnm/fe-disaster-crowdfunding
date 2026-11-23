@@ -8,6 +8,20 @@ export const apiClient = axios.create({
   },
 })
 
+// Attach Bearer JWT token if available
+apiClient.interceptors.request.use(
+  (config) => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("pedulichain_token")
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
+    }
+    return config
+  },
+  (error) => Promise.reject(error)
+)
+
 // Mock data awal untuk demo & verifikasi spesifikasi
 export const INITIAL_CAMPAIGNS = [
   {
