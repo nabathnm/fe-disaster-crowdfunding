@@ -154,7 +154,7 @@ export default function DonorDashboardPage() {
     )
   }
 
-  const activeWalletAddress = walletData.wallet_address || user?.wallet_address || ""
+  const activeWalletAddress = walletData?.wallet_address || user?.wallet_address || ""
 
   return (
     <div className="container mx-auto px-4 sm:px-6 py-8 max-w-6xl space-y-6">
@@ -371,7 +371,7 @@ export default function DonorDashboardPage() {
                 </Button>
               ))}
               <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 text-xs font-medium rounded-md ml-1">
-                {displayTransactions.length} Resi
+                {userTransactions.length} Resi
               </Badge>
             </div>
           </div>

@@ -9,6 +9,7 @@ import { formatRupiah, formatAddress, formatPercent } from "@/lib/formatters"
 
 export default function CampaignCard({ campaign, onDonateClick }) {
   const [copied, setCopied] = useState(false)
+  if (!campaign) return null
   const percent = formatPercent(campaign.collectedAmount, campaign.targetAmount)
 
   const copyWallet = (e) => {

@@ -24,7 +24,8 @@ export default function AuditTrailTable({ transactions = [] }) {
     setTimeout(() => setCopiedHash(null), 2000)
   }
 
-  const filteredTransactions = transactions.filter((tx) => {
+  const filteredTransactions = (transactions || []).filter((tx) => {
+    if (!tx) return false
     const term = searchTerm.toLowerCase()
     return (
       tx.txHash?.toLowerCase().includes(term) ||

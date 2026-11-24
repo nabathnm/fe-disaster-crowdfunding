@@ -22,8 +22,8 @@ export default function HomePage() {
     setIsModalOpen(true)
   }
 
-  const totalCollected = campaigns.reduce((acc, c) => acc + (c.collectedAmount || 0), 0)
-  const totalTarget = campaigns.reduce((acc, c) => acc + (c.targetAmount || 0), 0)
+  const totalCollected = (campaigns || []).reduce((acc, c) => acc + (c?.collectedAmount || 0), 0)
+  const totalTarget = (campaigns || []).reduce((acc, c) => acc + (c?.targetAmount || 0), 0)
 
   return (
     <div className="space-y-16 pb-20">
