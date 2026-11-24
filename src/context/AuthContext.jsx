@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react"
-import { registerApi, loginApi, getSessionApi } from "@/services/auth"
+import { registerApi, loginApi, getSessionApi, getUsersApi } from "@/services/auth"
 
 const AuthContext = createContext(null)
 
@@ -96,22 +96,24 @@ export function AuthProvider({ children }) {
 
       // Ambil data user lengkap dari endpoint GET /api/v1/auth/session
       const sessionRes = await getSessionApi(accessToken)
+      let loggedInUser = null
       if (sessionRes.success && sessionRes.data) {
+        loggedInUser = sessionRes.data
         setUser(sessionRes.data)
         localStorage.setItem("pedulichain_user", JSON.stringify(sessionRes.data))
       } else {
         // Fallback jika session endpoint temporary offline
-        const fallbackUser = {
+        loggedInUser = {
           name: email.split("@")[0],
           email: email,
           role: "DONOR",
           wallet_address: "0x" + Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join(""),
         }
-        setUser(fallbackUser)
-        localStorage.setItem("pedulichain_user", JSON.stringify(fallbackUser))
+        setUser(loggedInUser)
+        localStorage.setItem("pedulichain_user", JSON.stringify(loggedInUser))
       }
 
-      return { success: true, data: res.data, message: res.message }
+      return { success: true, data: res.data, user: loggedInUser, message: res.message }
     }
 
     return {
@@ -133,6 +135,13 @@ export function AuthProvider({ children }) {
       return res.data
     }
     return null
+  }
+
+  /**
+   * Mengambil daftar/info user via GET /api/v1/users
+   */
+  const fetchUsers = async () => {
+    return await getUsersApi(token)
   }
 
   /**
@@ -160,6 +169,8 @@ export function AuthProvider({ children }) {
         login,
         logout,
         refreshSession,
+        fetchUsers,
+        getUsers: fetchUsers,
       }}
     >
       {children}

@@ -47,8 +47,15 @@ export default function LoginPage() {
       })
 
       if (res.success) {
-        // Redirect to dashboard or back
-        router.push("/dashboard")
+        // Auto-redirect berdasarkan 3 jenis peran: ADMIN -> /admin, INITIATOR -> /initiator, DONOR -> /dashboard
+        const role = res.user?.role
+        if (role === "ADMIN") {
+          router.push("/admin")
+        } else if (role === "INITIATOR") {
+          router.push("/initiator")
+        } else {
+          router.push("/dashboard")
+        }
       } else {
         const errorText = typeof res.errors === "string" ? res.errors : res.message
         setErrorMessage(errorText || "Email atau kata sandi tidak valid")

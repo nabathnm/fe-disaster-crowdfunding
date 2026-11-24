@@ -1,4 +1,5 @@
 import axios from "axios"
+import { getCampaignsApi, getCampaignByIdApi } from "@/services/campaign"
 
 export const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "/api",
@@ -114,21 +115,57 @@ export const INITIAL_AUDIT_LOGS = [
   },
 ]
 
+export function normalizeCampaign(c) {
+  if (!c) return null
+  return {
+    ...c,
+    id: c.id,
+    title: c.title || "Program Bantuan Kemanusiaan",
+    description: c.description || "",
+    story: c.story || c.description || "Setiap donasi disalurkan secara transparan langsung ke posko bencana dengan bukti pencatatan hash di blockchain Sepolia.",
+    category: c.category || "Tanggap Bencana",
+    imageUrl: c.image_url || c.imageUrl || "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=800&q=80",
+    image_url: c.image_url || c.imageUrl,
+    targetAmount: Number(c.target_amount || c.targetAmount || 0),
+    target_amount: c.target_amount || c.targetAmount || "0",
+    collectedAmount: Number(c.collected_amount || c.collectedAmount || 0),
+    collected_amount: c.collected_amount || c.collectedAmount || "0",
+    walletAddress: c.wallet_address || c.walletAddress || "0x3A2c4E80D21683E2eF4410915f0133cAA2b04f14",
+    wallet_address: c.wallet_address || c.walletAddress,
+    status: c.status || "ACTIVE",
+    deadline: c.deadline || c.created_at || "2026-12-31T23:59:59Z",
+    created_at: c.created_at,
+    updated_at: c.updated_at,
+  }
+}
+
 export async function fetchCampaigns() {
   try {
-    const res = await apiClient.get("/campaigns")
-    return res.data
+    const res = await getCampaignsApi()
+    if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+      return res.data.map(normalizeCampaign)
+    }
+    return INITIAL_CAMPAIGNS.map(normalizeCampaign)
   } catch {
-    return INITIAL_CAMPAIGNS
+    return INITIAL_CAMPAIGNS.map(normalizeCampaign)
   }
 }
 
 export async function fetchCampaignById(id) {
   try {
-    const res = await apiClient.get(`/campaigns/${id}`)
-    return res.data
+    const res = await getCampaignByIdApi(id)
+    if (res.success && res.data) {
+      return normalizeCampaign(res.data)
+    }
+    return (
+      INITIAL_CAMPAIGNS.find((c) => c.id === id) ||
+      INITIAL_CAMPAIGNS[0]
+    )
   } catch {
-    return INITIAL_CAMPAIGNS.find((c) => c.id === id) || INITIAL_CAMPAIGNS[0]
+    return (
+      INITIAL_CAMPAIGNS.find((c) => c.id === id) ||
+      INITIAL_CAMPAIGNS[0]
+    )
   }
 }
 

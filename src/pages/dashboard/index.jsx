@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import {
   Wallet,
@@ -15,6 +15,9 @@ import {
   Check,
   LogIn,
   UserPlus,
+  PlusCircle,
+  RefreshCw,
+  ArrowUpRight,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import {
@@ -30,11 +33,48 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/context/AuthContext"
 import { formatRupiah, formatAddress, formatDate } from "@/lib/formatters"
 import { getTxExplorerUrl, getAddressExplorerUrl } from "@/services/web3Provider"
+import { getWalletApi } from "@/services/wallet"
+import TopupModal from "@/components/TopupModal"
 
 export default function DonorDashboardPage() {
-  const { user, isAuthenticated } = useAuth()
-  const [fiatBalance] = useState(2500000)
+  const { user, token, isAuthenticated } = useAuth()
   const [copiedWallet, setCopiedWallet] = useState(false)
+  const [isTopupModalOpen, setIsTopupModalOpen] = useState(false)
+  const [isLoadingWallet, setIsLoadingWallet] = useState(false)
+
+  const [walletData, setWalletData] = useState({
+    wallet_address: user?.wallet_address || "",
+    balance_eth: "0.0",
+    balance_wei: "0",
+    balance_idr: 0,
+    idr_per_eth: 10000000,
+  })
+
+  // Load live wallet information from GET /api/v1/wallet
+  const loadWallet = async () => {
+    setIsLoadingWallet(true)
+    try {
+      const res = await getWalletApi(token)
+      if (res.success && res.data) {
+        setWalletData(res.data)
+      }
+    } catch (e) {
+      console.warn("Gagal mengambil data wallet live:", e)
+    } finally {
+      setIsLoadingWallet(false)
+    }
+  }
+
+  useEffect(() => {
+    if (isAuthenticated || token) {
+      loadWallet()
+    }
+  }, [isAuthenticated, token])
+
+  const handleTopupSuccess = (topupData) => {
+    // Refresh balance after top-up transaction initiated
+    loadWallet()
+  }
 
   const [donorHistory] = useState([
     {
@@ -79,7 +119,8 @@ export default function DonorDashboardPage() {
     }
   }
 
-  const activeWalletAddress = user?.wallet_address || "0x20100998db146E02FC6A24778B82132C7044bdB4"
+  const activeWalletAddress =
+    walletData.wallet_address || user?.wallet_address || "0x20100998db146E02FC6A24778B82132C7044bdB4"
 
   return (
     <div className="container mx-auto px-4 sm:px-6 py-8 max-w-6xl space-y-8">
@@ -103,11 +144,20 @@ export default function DonorDashboardPage() {
             Pantau akumulasi kontribusi kebaikan Anda, saldo dompet fiat, dan dompet Ethereum resmi Anda.
           </p>
         </div>
-        <Button asChild size="sm" className="gap-2 font-bold shadow-sm shadow-emerald-600/20 rounded-xl">
-          <Link href="/">
-            <HeartHandshake className="h-4 w-4" /> Donasi Lagi
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            onClick={() => setIsTopupModalOpen(true)}
+            className="gap-1.5 font-bold shadow-sm shadow-emerald-600/20 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white"
+          >
+            <PlusCircle className="h-4 w-4" /> Top Up Saldo
+          </Button>
+          <Button asChild variant="outline" size="sm" className="gap-2 font-bold rounded-xl border-emerald-200">
+            <Link href="/">
+              <HeartHandshake className="h-4 w-4 text-emerald-600" /> Donasi Lagi
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* User On-Chain Identity Card / Auth Callout */}
@@ -217,26 +267,50 @@ export default function DonorDashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Sisa Saldo Dompet Fiat */}
+        {/* Sisa Saldo Dompet Fiat & Topup System */}
         <Card className="rounded-2xl border-emerald-100/90 bg-white dark:bg-card shadow-sm shadow-emerald-600/5 hover:border-emerald-200 transition-colors">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Sisa Saldo Dompet Fiat
+              Saldo Dompet Fiat (Midtrans)
             </CardTitle>
-            <div className="h-9 w-9 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center shadow-xs">
-              <Wallet className="h-4.5 w-4.5" />
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={loadWallet}
+                disabled={isLoadingWallet}
+                className="h-7 w-7 text-muted-foreground hover:text-emerald-700 cursor-pointer"
+                title="Refresh Saldo Wallet"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isLoadingWallet ? "animate-spin text-emerald-600" : ""}`} />
+              </Button>
+              <div className="h-9 w-9 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center shadow-xs">
+                <Wallet className="h-4.5 w-4.5" />
+              </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl sm:text-3xl font-extrabold text-foreground">
-              {formatRupiah(fiatBalance)}
+          <CardContent className="space-y-3">
+            <div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-foreground">
+                {formatRupiah(walletData.balance_idr || 0)}
+              </div>
+              <div className="flex items-center justify-between mt-1 text-xs">
+                <span className="font-mono text-emerald-700 font-bold">
+                  ≈ {walletData.balance_eth || "0.0"} ETH
+                </span>
+                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200">
+                  Rate: 1 ETH = {formatRupiah(walletData.idr_per_eth || 10000000)}
+                </Badge>
+              </div>
             </div>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs text-emerald-600 font-semibold">Tersambung Midtrans Sandbox</span>
-              <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200">
-                Ready
-              </Badge>
-            </div>
+
+            <Button
+              size="sm"
+              onClick={() => setIsTopupModalOpen(true)}
+              className="w-full text-xs font-bold rounded-xl shadow-xs gap-1.5 py-4 cursor-pointer"
+            >
+              <PlusCircle className="h-3.5 w-3.5" /> Top Up Saldo Sekarang
+            </Button>
           </CardContent>
         </Card>
 
@@ -353,6 +427,14 @@ export default function DonorDashboardPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Topup Modal System */}
+      <TopupModal
+        isOpen={isTopupModalOpen}
+        onClose={() => setIsTopupModalOpen(false)}
+        idrPerEth={walletData?.idr_per_eth || 10000000}
+        onTopupSuccess={handleTopupSuccess}
+      />
     </div>
   )
 }

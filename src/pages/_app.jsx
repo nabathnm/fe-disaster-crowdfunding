@@ -2,6 +2,7 @@ import "@/styles/globals.css"
 import Head from "next/head"
 import Script from "next/script"
 import Navbar from "@/components/Navbar"
+import Footer from "@/components/Footer"
 import { AuthProvider } from "@/context/AuthContext"
 
 export default function App({ Component, pageProps }) {
@@ -36,24 +37,7 @@ export default function App({ Component, pageProps }) {
         <main className="flex-1">
           <Component {...pageProps} />
         </main>
-        <footer className="border-t border-emerald-100/80 py-6 md:py-8 bg-white/70 dark:bg-card/70 backdrop-blur">
-          <div className="container mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-            <p>© 2026 PeduliChain Disaster Crowdfunding. Ethereum Sepolia Testnet.</p>
-            <div className="flex items-center gap-4">
-              <a href="/audit" className="hover:underline text-emerald-800 dark:text-emerald-300">
-                Transparency Audit
-              </a>
-              <a
-                href="https://sepolia.etherscan.io"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:underline text-emerald-800 dark:text-emerald-300"
-              >
-                Sepolia Etherscan
-              </a>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </AuthProvider>
   )

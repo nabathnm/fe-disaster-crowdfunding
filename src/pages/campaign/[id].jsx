@@ -14,6 +14,9 @@ import {
   Users,
   Heart,
   CheckCircle2,
+  DollarSign,
+  Layers,
+  Sparkles,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -22,6 +25,7 @@ import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import MidtransSnapModal from "@/components/MidtransSnapModal"
 import { fetchCampaignById, INITIAL_CAMPAIGNS } from "@/services/api"
+import { getCampaignDonatursApi, getCampaignDisbursementsApi } from "@/services/campaign"
 import { formatRupiah, formatAddress, formatDate, formatPercent } from "@/lib/formatters"
 import { getAddressExplorerUrl } from "@/services/web3Provider"
 
@@ -30,13 +34,30 @@ export default function CampaignDetailPage() {
   const { id } = router.query
 
   const [campaign, setCampaign] = useState(null)
+  const [donaturs, setDonaturs] = useState([])
+  const [disbursements, setDisbursements] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (id) {
+      // 1. Fetch Campaign Details
       fetchCampaignById(id).then((data) => {
         setCampaign(data || INITIAL_CAMPAIGNS[0])
+      })
+
+      // 2. Fetch Donaturs (GET /campaigns/{id}/donaturs)
+      getCampaignDonatursApi(id).then((res) => {
+        if (res.success && Array.isArray(res.data)) {
+          setDonaturs(res.data)
+        }
+      })
+
+      // 3. Fetch Disbursements (GET /campaigns/{id}/disbursements)
+      getCampaignDisbursementsApi(id).then((res) => {
+        if (res.success && Array.isArray(res.data)) {
+          setDisbursements(res.data)
+        }
       })
     }
   }, [id])
@@ -167,6 +188,102 @@ export default function CampaignDetailPage() {
                   </Button>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Daftar Donatur Publik (GET /campaigns/{id}/donaturs) */}
+          <Card className="rounded-2xl border-emerald-100 bg-white dark:bg-card shadow-sm">
+            <CardHeader className="p-5 pb-3 border-b border-emerald-50">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-bold flex items-center gap-2 text-foreground">
+                  <Users className="h-4 w-4 text-emerald-600" /> Daftar Donatur Terverifikasi
+                </CardTitle>
+                <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-200 text-xs">
+                  {donaturs.length} Donatur
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="p-5">
+              {donaturs.length === 0 ? (
+                <div className="p-6 text-center space-y-1 bg-muted/30 rounded-xl">
+                  <p className="text-xs font-semibold text-foreground">Belum ada donasi publik</p>
+                  <p className="text-[11px] text-muted-foreground">Jadilah orang pertama yang berdonasi untuk posko bencana ini!</p>
+                </div>
+              ) : (
+                <div className="space-y-2.5 max-h-60 overflow-y-auto">
+                  {donaturs.map((don, idx) => (
+                    <div key={don.id || idx} className="p-3 rounded-xl border border-emerald-100 bg-emerald-50/20 flex items-center justify-between gap-3 text-xs">
+                      <div>
+                        <div className="font-bold text-foreground">{don.donor_name || don.name || "Donatur Dermawan"}</div>
+                        <div className="font-mono text-[11px] text-muted-foreground">{formatAddress(don.donor_wallet || don.wallet_address)}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold font-mono text-emerald-700">
+                          {don.amount_eth ? `${don.amount_eth} ETH` : don.amount ? formatRupiah(don.amount) : "0 ETH"}
+                        </div>
+                        {don.tx_hash && (
+                          <a
+                            href={`https://sepolia.etherscan.io/tx/${don.tx_hash}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-[10px] text-emerald-600 hover:underline inline-flex items-center gap-1 font-mono"
+                          >
+                            Tx Sepolia <ExternalLink className="h-2.5 w-2.5" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Penyaluran & Pencairan Dana (GET /campaigns/{id}/disbursements) */}
+          <Card className="rounded-2xl border-teal-100 bg-white dark:bg-card shadow-sm">
+            <CardHeader className="p-5 pb-3 border-b border-teal-50">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-bold flex items-center gap-2 text-foreground">
+                  <DollarSign className="h-4 w-4 text-teal-600" /> Penyaluran Dana Lapangan (Disbursements)
+                </CardTitle>
+                <Badge variant="outline" className="bg-teal-50 text-teal-800 border-teal-200 text-xs">
+                  {disbursements.length} Penyaluran
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="p-5">
+              {disbursements.length === 0 ? (
+                <div className="p-6 text-center space-y-1 bg-muted/30 rounded-xl">
+                  <p className="text-xs font-semibold text-foreground">Belum ada pencairan dana</p>
+                  <p className="text-[11px] text-muted-foreground">Dana masih tersimpan aman di smart contract escrow.</p>
+                </div>
+              ) : (
+                <div className="space-y-2.5 max-h-60 overflow-y-auto">
+                  {disbursements.map((dis, idx) => (
+                    <div key={dis.id || idx} className="p-3 rounded-xl border border-teal-100 bg-teal-50/20 flex items-center justify-between gap-3 text-xs">
+                      <div>
+                        <div className="font-bold text-foreground">{dis.purpose || "Penyaluran Bantuan"}</div>
+                        <div className="text-[11px] text-muted-foreground">Penerima: {dis.recipient || "Posko Tanggap Darurat"}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold font-mono text-teal-700">
+                          {dis.amount_eth ? `${dis.amount_eth} ETH` : dis.amount ? formatRupiah(dis.amount) : "0 ETH"}
+                        </div>
+                        {dis.tx_hash && (
+                          <a
+                            href={`https://sepolia.etherscan.io/tx/${dis.tx_hash}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-[10px] text-teal-600 hover:underline inline-flex items-center gap-1 font-mono"
+                          >
+                            Tx On-Chain <ExternalLink className="h-2.5 w-2.5" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

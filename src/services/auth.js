@@ -104,3 +104,70 @@ export async function getSessionApi(token) {
     }
   }
 }
+
+/**
+ * Get All Users API (Menggunakan HTTP Bearer Token)
+ * Endpoint: GET /api/v1/users
+ * Headers: Authorization: Bearer <access_token>, Accept: application/json
+ * Response Data: UserResponse[] (Array data seluruh user untuk role berwenang)
+ */
+export async function getUsersApi(token) {
+  try {
+    const headers = {
+      Accept: "*/*",
+    }
+    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    if (activeToken) {
+      headers.Authorization = `Bearer ${activeToken}`
+    }
+    const response = await axios.get("/api/v1/users", {
+      headers,
+      timeout: 15000,
+    })
+    return response.data
+  } catch (error) {
+    if (error.response?.data) {
+      return error.response.data
+    }
+    return {
+      success: false,
+      message: error.message || "Gagal mengambil info user dari /api/v1/users",
+      errors: null,
+      data: null,
+    }
+  }
+}
+
+/**
+ * Update User Role API
+ * Endpoint: PATCH /api/v1/users/{id}/role
+ * Payload: { role: 'DONOR' | 'INITIATOR' | 'ADMIN' }
+ */
+export async function updateUserRoleApi(userId, role, token) {
+  try {
+    const headers = {
+      "Content-Type": "application/json",
+      Accept: "*/*",
+    }
+    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    if (activeToken) {
+      headers.Authorization = `Bearer ${activeToken}`
+    }
+    const response = await axios.patch(
+      `/api/v1/users/${userId}/role`,
+      { role },
+      { headers, timeout: 15000 }
+    )
+    return response.data
+  } catch (error) {
+    if (error.response?.data) {
+      return error.response.data
+    }
+    return {
+      success: false,
+      message: error.message || "Gagal memperbarui peran user",
+      errors: null,
+      data: null,
+    }
+  }
+}
