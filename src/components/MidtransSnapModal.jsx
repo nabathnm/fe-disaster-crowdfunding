@@ -104,7 +104,7 @@ export default function MidtransSnapModal({ isOpen, onClose, campaign, onDonatio
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && resetForm()}>
-      <DialogContent className="sm:max-w-[490px] rounded-3xl bg-white dark:bg-card border-emerald-100 dark:border-emerald-950 p-6 shadow-2xl">
+      <DialogContent className="sm:max-w-[490px] rounded-lg bg-white border border-slate-200 p-6 shadow-lg">
         {isSuccess ? (
           <div className="py-6 text-center space-y-4">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 shadow-inner">

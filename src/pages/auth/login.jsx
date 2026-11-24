@@ -69,20 +69,16 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center px-4 py-12">
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-100/40 dark:bg-emerald-950/20 rounded-full blur-3xl pointer-events-none -z-10" />
-
       <div className="w-full max-w-md">
-        <Card className="rounded-3xl border-emerald-100/90 bg-white dark:bg-card shadow-xl shadow-emerald-600/5 overflow-hidden">
-          <div className="h-2 w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600" />
-
-          <CardHeader className="space-y-2 text-center pt-8 pb-4">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/20 mb-1">
-              <Heart className="h-6 w-6 fill-white/20" />
+        <Card className="rounded-lg border border-slate-200 bg-white shadow-none overflow-hidden">
+          <CardHeader className="space-y-1.5 text-center pt-8 pb-4">
+            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-600 text-white mb-2">
+              <Heart className="h-5 w-5" />
             </div>
-            <CardTitle className="text-2xl font-extrabold tracking-tight text-emerald-950 dark:text-emerald-100">
+            <CardTitle className="text-xl font-bold tracking-tight text-slate-900">
               Masuk ke PeduliChain
             </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground max-w-xs mx-auto">
+            <CardDescription className="text-xs text-slate-500 max-w-xs mx-auto">
               Akses dashboard donatur Anda dan pantau seluruh transaksi on-chain.
             </CardDescription>
           </CardHeader>
@@ -90,26 +86,26 @@ export default function LoginPage() {
           <CardContent className="px-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               {errorMessage && (
-                <div className="rounded-xl bg-destructive/10 border border-destructive/20 p-3 text-xs text-destructive flex items-start gap-2 animate-in fade-in-50">
-                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <div className="rounded-lg bg-rose-50 border border-rose-200 p-3 text-xs text-rose-900 flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-rose-600" />
                   <span>{errorMessage}</span>
                 </div>
               )}
 
               {/* Email */}
               <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-xs font-bold text-emerald-950 dark:text-emerald-200">
+                <Label htmlFor="email" className="text-xs font-semibold text-slate-700">
                   Alamat Email
                 </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input
                     id="email"
                     type="email"
                     placeholder="nama@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 text-xs rounded-xl border-emerald-200 focus-visible:ring-emerald-500 bg-emerald-50/20"
+                    className="pl-10 text-xs rounded-lg border-slate-200 bg-white focus-visible:ring-emerald-500"
                     required
                   />
                 </div>
@@ -118,25 +114,25 @@ export default function LoginPage() {
               {/* Password */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-xs font-bold text-emerald-950 dark:text-emerald-200">
+                  <Label htmlFor="password" className="text-xs font-semibold text-slate-700">
                     Kata Sandi
                   </Label>
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Masukkan kata sandi"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10 text-xs rounded-xl border-emerald-200 focus-visible:ring-emerald-500 bg-emerald-50/20"
+                    className="pl-10 pr-10 text-xs rounded-lg border-slate-200 bg-white focus-visible:ring-emerald-500"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -146,7 +142,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full font-bold shadow-md shadow-emerald-600/20 rounded-xl py-5 text-sm gap-2 mt-2"
+                className="w-full font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-none py-2.5 text-sm gap-2 mt-2 cursor-pointer"
               >
                 {isLoading ? (
                   <>
@@ -162,10 +158,10 @@ export default function LoginPage() {
             </form>
           </CardContent>
 
-          <CardFooter className="pt-2 pb-6 px-6 text-center justify-center border-t border-emerald-100/60 mt-4">
-            <p className="text-xs text-muted-foreground">
+          <CardFooter className="pt-3 pb-6 px-6 text-center justify-center border-t border-slate-100 mt-4">
+            <p className="text-xs text-slate-500">
               Belum memiliki akun?{" "}
-              <Link href="/auth/register" className="font-bold text-emerald-700 hover:underline">
+              <Link href="/auth/register" className="font-semibold text-emerald-700 hover:underline">
                 Daftar Akun Baru
               </Link>
             </p>

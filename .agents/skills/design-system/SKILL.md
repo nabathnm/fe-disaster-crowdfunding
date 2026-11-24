@@ -1,26 +1,62 @@
 ---
 name: design-system
-description: Token architecture, component specifications, and slide generation. Three-layer tokens (primitive→semantic→component), CSS variables, spacing/typography scales, component specs, strategic slide creation. Use for design tokens, systematic design, brand-compliant presentations.
+description: Token architecture, component specifications, and slide generation with Anti-Slop enforcement. Three-layer tokens (primitive→semantic→component), CSS variables, spacing/typography scales, component specs, WCAG AA contrast verification, and brand-compliant presentations.
 argument-hint: "[component or token]"
 license: MIT
 metadata:
   author: claudekit
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Design System
 
-Token architecture, component specifications, systematic design, slide generation.
+Token architecture, component specifications, systematic design, and presentation generation — strictly filtered by **Anti-Slop** rules.
 
 ## When to Use
 
-- Design token creation
-- Component state definitions
-- CSS variable systems
-- Spacing/typography scales
+- Design token creation and maintenance
+- Component state definitions and specifications
+- CSS variable systems and design systems
+- Spacing, typography, and elevation scales
 - Design-to-code handoff
 - Tailwind theme configuration
-- **Slide/presentation generation**
+- **Slide and presentation generation**
+
+---
+
+## Anti-Slop & Craftsmanship Standards for Tokens
+
+All tokens and component specifications MUST comply with the **Anti-Slop Craftsmanship Standards** (`.agents/skills/antislop/SKILL.md`):
+
+### 1. Palette Restraint & No AI Defaults (R-01, R-29)
+- **FORBIDDEN**: Using the generic AI-slop blue palette (`#2563EB`, `#3B82F6`) or purple-blue gradients as an unthinking default.
+- **REQUIRED**: Primitives must derive from the product's actual brand identity (see `DESIGN.md`, e.g. caring emerald/green for PeduliChain).
+- Restrain the active palette: 2-3 core colors (neutral base + brand primary) + 1 deliberate accent.
+
+### 2. Mandatory Contrast Verification (R-25)
+- All foreground and background token pairings MUST meet WCAG AA contrast standards:
+  - Normal text: minimum **4.5:1** contrast ratio.
+  - Large text (18px+) & component boundaries: minimum **3:1** contrast ratio.
+- Never eyeball or hallucinate grey contrast. Verify using `python .agents/skills/antislop-human/contrast-check.py "<bg>" "<fg>"`.
+
+### 3. Purposeful Border Radius (R-11)
+- **FORBIDDEN**: Uniform pill-shaped radius (`rounded-full` / `9999px`) on every card, input, button, and badge.
+- Establish a deliberate 3-tier radius scale:
+  - `sm` (0.25rem - 4px): inputs, tags, badges, small buttons.
+  - `md` (0.5rem - 8px): cards, dropdowns, primary buttons.
+  - `lg` (0.75rem - 12px) to `xl` (1rem - 16px): modals, sheets, dialog containers.
+
+### 4. Elevation Over Floating Shadows (R-12)
+- Most surfaces sit flat on the ground plane (`--shadow-none` or subtle `--shadow-sm`).
+- Reserve elevated shadows (`--shadow-md`, `--shadow-lg`) strictly for surfaces that physically lift above the page (drawers, dialogs, active dropdowns).
+
+### 5. Intentional Focus & States (R-26, R-27, R-32)
+- Provide dedicated tokens for:
+  - `--ring` / `--focus-visible`: High-visibility focus indicators (minimum 3:1 against background).
+  - Component states: `default`, `hover`, `active`, `focus`, `disabled`.
+  - Content states: `empty`, `loading`, `error`.
+
+---
 
 ## Token Architecture
 
@@ -29,23 +65,28 @@ Load: `references/token-architecture.md`
 ### Three-Layer Structure
 
 ```
-Primitive (raw values)
+Primitive (raw values: brand hues, neutral scales, dimensions)
        ↓
-Semantic (purpose aliases)
+Semantic (purpose aliases: background, foreground, primary, border)
        ↓
-Component (component-specific)
+Component (component-specific: button-bg, card-radius, input-ring)
 ```
 
-**Example:**
+**Example (PeduliChain Caring Green Brand):**
 ```css
-/* Primitive */
---color-blue-600: #2563EB;
+/* Layer 1: Primitive */
+--color-emerald-600: #059669;
+--color-emerald-700: #047857;
+--color-slate-900: #0f172a;
 
-/* Semantic */
---color-primary: var(--color-blue-600);
+/* Layer 2: Semantic (Purpose-Driven) */
+--color-primary: var(--color-emerald-600);
+--color-primary-hover: var(--color-emerald-700);
+--color-foreground: var(--color-slate-900);
 
-/* Component */
---button-bg: var(--color-primary);
+/* Layer 3: Component (Specific) */
+--button-primary-bg: var(--color-primary);
+--button-primary-hover: var(--color-primary-hover);
 ```
 
 ## Quick Start
@@ -55,55 +96,48 @@ Component (component-specific)
 node scripts/generate-tokens.cjs --config tokens.json -o tokens.css
 ```
 
-**Validate usage:**
+**Validate token usage (checks for hardcoded values and contrast):**
 ```bash
 node scripts/validate-tokens.cjs --dir src/
 ```
 
 ## References
 
-| Topic | File |
-|-------|------|
-| Token Architecture | `references/token-architecture.md` |
-| Primitive Tokens | `references/primitive-tokens.md` |
-| Semantic Tokens | `references/semantic-tokens.md` |
-| Component Tokens | `references/component-tokens.md` |
-| Component Specs | `references/component-specs.md` |
-| States & Variants | `references/states-and-variants.md` |
-| Tailwind Integration | `references/tailwind-integration.md` |
+| Topic | File | Antislop Rule |
+|-------|------|---------------|
+| Token Architecture | `references/token-architecture.md` | C-1 (Intentionality) |
+| Primitive Tokens | `references/primitive-tokens.md` | R-29 (Restrained Palette) |
+| Semantic Tokens | `references/semantic-tokens.md` | R-25 (WCAG AA Contrast) |
+| Component Tokens | `references/component-tokens.md` | R-11 (Radius), R-12 (Shadow) |
+| Component Specs | `references/component-specs.md` | R-26, R-27 (UI States) |
+| States & Variants | `references/states-and-variants.md` | R-32 (Keyboard & Focus) |
+| Tailwind Integration | `references/tailwind-integration.md` | C-4 (Resilience) |
 
 ## Component Spec Pattern
 
-| Property | Default | Hover | Active | Disabled |
-|----------|---------|-------|--------|----------|
-| Background | primary | primary-dark | primary-darker | muted |
-| Text | white | white | white | muted-fg |
-| Border | none | none | none | muted-border |
-| Shadow | sm | md | none | none |
-
-## Scripts
-
-| Script | Purpose |
-|--------|---------|
-| `generate-tokens.cjs` | Generate CSS from JSON token config |
-| `validate-tokens.cjs` | Check for hardcoded values in code |
-| `search-slides.py` | BM25 search + contextual recommendations |
-| `slide-token-validator.py` | Validate slide HTML for token compliance |
-| `fetch-background.py` | Fetch images from Pexels/Unsplash |
+| Property | Default | Hover | Active | Focus (Visible) | Disabled |
+|----------|---------|-------|--------|-----------------|----------|
+| Background | primary | primary-hover | primary-active | primary | muted |
+| Text | primary-fg (4.5:1+) | primary-fg | primary-fg | primary-fg | muted-fg |
+| Border | border | border | border | ring (3:1+) | muted-border |
+| Shadow | sm | md | sm | none | none |
 
 ## Templates
 
 | Template | Purpose |
 |----------|---------|
-| `design-tokens-starter.json` | Starter JSON with three-layer structure |
+| `design-tokens-starter.json` | Anti-slop starter JSON with 3 layers, emerald brand palette, WCAG AA contrast, and purposeful scales |
 
 ## Integration
 
-**With brand:** Extract primitives from brand colors/typography
-**With ui-styling:** Component tokens → Tailwind config
+- **With antislop (`.agents/skills/antislop`):** Mandatory filter for all token decisions, component specs, and color choices.
+- **With brand / DESIGN.md:** Primitives extracted directly from the product's identity, never from AI defaults.
+- **With ui-styling (`.agents/skills/ui-styling`):** Semantic tokens feed directly into Tailwind theme variables and shadcn/ui.
 
-**Skill Dependencies:** brand, ui-styling
+**Skill Dependencies:** antislop, antislop-ui, antislop-human, ui-styling  
 **Primary Agents:** ui-ux-designer, frontend-developer
+
+---
 
 ## Slide System
 
@@ -113,132 +147,17 @@ Brand-compliant presentations using design tokens + Chart.js + contextual decisi
 
 | File | Purpose |
 |------|---------|
-| `docs/brand-guidelines.md` | Brand identity, voice, colors |
+| `DESIGN.md` / `brand-guidelines.md` | Brand identity, voice, colors |
 | `assets/design-tokens.json` | Token definitions (primitive→semantic→component) |
 | `assets/design-tokens.css` | CSS variables (import in slides) |
 | `assets/css/slide-animations.css` | CSS animation library |
 
-### Slide Search (BM25)
-
-```bash
-# Basic search (auto-detect domain)
-python scripts/search-slides.py "investor pitch"
-
-# Domain-specific search
-python scripts/search-slides.py "problem agitation" -d copy
-python scripts/search-slides.py "revenue growth" -d chart
-
-# Contextual search (Premium System)
-python scripts/search-slides.py "problem slide" --context --position 2 --total 9
-python scripts/search-slides.py "cta" --context --position 9 --prev-emotion frustration
-```
-
-### Decision System CSVs
-
-| File | Purpose |
-|------|---------|
-| `data/slide-strategies.csv` | 15 deck structures + emotion arcs + sparkline beats |
-| `data/slide-layouts.csv` | 25 layouts + component variants + animations |
-| `data/slide-layout-logic.csv` | Goal → Layout + break_pattern flag |
-| `data/slide-typography.csv` | Content type → Typography scale |
-| `data/slide-color-logic.csv` | Emotion → Color treatment |
-| `data/slide-backgrounds.csv` | Slide type → Image category (Pexels/Unsplash) |
-| `data/slide-copy.csv` | 25 copywriting formulas (PAS, AIDA, FAB) |
-| `data/slide-charts.csv` | 25 chart types with Chart.js config |
-
-### Contextual Decision Flow
-
-```
-1. Parse goal/context
-        ↓
-2. Search slide-strategies.csv → Get strategy + emotion beats
-        ↓
-3. For each slide:
-   a. Query slide-layout-logic.csv → layout + break_pattern
-   b. Query slide-typography.csv → type scale
-   c. Query slide-color-logic.csv → color treatment
-   d. Query slide-backgrounds.csv → image if needed
-   e. Apply animation class from slide-animations.css
-        ↓
-4. Generate HTML with design tokens
-        ↓
-5. Validate with slide-token-validator.py
-```
-
-### Pattern Breaking (Duarte Sparkline)
-
-Premium decks alternate between emotions for engagement:
-```
-"What Is" (frustration) ↔ "What Could Be" (hope)
-```
-
-System calculates pattern breaks at 1/3 and 2/3 positions.
-
-### Slide Requirements
+### Slide Requirements (Anti-Slop Compliant)
 
 **ALL slides MUST:**
-1. Import `assets/design-tokens.css` - single source of truth
+1. Import `assets/design-tokens.css` as single source of truth.
 2. Use CSS variables: `var(--color-primary)`, `var(--slide-bg)`, etc.
-3. Use Chart.js for charts (NOT CSS-only bars)
-4. Include navigation (keyboard arrows, click, progress bar)
-5. Center align content
-6. Focus on persuasion/conversion
-
-### Chart.js Integration
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
-<canvas id="revenueChart"></canvas>
-<script>
-new Chart(document.getElementById('revenueChart'), {
-    type: 'line',
-    data: {
-        labels: ['Sep', 'Oct', 'Nov', 'Dec'],
-        datasets: [{
-            data: [5, 12, 28, 45],
-            borderColor: '#FF6B6B',  // Use brand coral
-            backgroundColor: 'rgba(255, 107, 107, 0.1)',
-            fill: true,
-            tension: 0.4
-        }]
-    }
-});
-</script>
-```
-
-### Token Compliance
-
-```css
-/* CORRECT - uses token */
-background: var(--slide-bg);
-color: var(--color-primary);
-font-family: var(--typography-font-heading);
-
-/* WRONG - hardcoded */
-background: #0D0D0D;
-color: #FF6B6B;
-font-family: 'Space Grotesk';
-```
-
-### Reference Implementation
-
-Working example with all features:
-```
-assets/designs/slides/claudekit-pitch-251223.html
-```
-
-### Command
-
-```bash
-/slides:create "10-slide investor pitch for ClaudeKit Marketing"
-```
-
-## Best Practices
-
-1. Never use raw hex in components - always reference tokens
-2. Semantic layer enables theme switching (light/dark)
-3. Component tokens enable per-component customization
-4. Use HSL format for opacity control
-5. Document every token's purpose
-6. **Slides must import design-tokens.css and use var() exclusively**
+3. Use Chart.js with high-contrast data series (WCAG AA).
+4. Include keyboard navigation (`ArrowRight`, `ArrowLeft`, `Escape`).
+5. Adhere to **Evidence Over Claims (C-5)**: Real data only, no fabricated statistics (R-17).
+6. No empty AI buzzwords or em dashes (R-02, R-16).

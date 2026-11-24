@@ -417,37 +417,36 @@ export default function InitiatorDashboardPage() {
   if (!isAuthenticated || (user?.role !== "INITIATOR" && user?.role !== "ADMIN")) {
     return (
       <div className="container mx-auto px-4 py-16 max-w-lg">
-        <Card className="rounded-3xl border-sky-200/90 bg-white dark:bg-card shadow-xl text-center overflow-hidden">
-          <div className="h-2 bg-gradient-to-r from-sky-500 via-teal-500 to-emerald-600" />
+        <Card className="rounded-lg border border-slate-200 bg-white text-center overflow-hidden shadow-none">
           <CardHeader className="pt-8 pb-4">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 mb-3 shadow-inner">
-              <UserCheck className="h-7 w-7" />
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-slate-700 mb-3">
+              <UserCheck className="h-6 w-6" />
             </div>
-            <CardTitle className="text-xl font-extrabold text-foreground">
+            <CardTitle className="text-xl font-bold text-slate-900">
               Portal Khusus Inisiator Bencana
             </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+            <CardDescription className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
               Halaman ini diperuntukkan bagi pengguna dengan peran <strong>INITIATOR</strong> untuk membuat dan mengelola program bantuan bencana.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 px-6 text-xs text-muted-foreground">
-            <div className="rounded-xl bg-muted/60 p-3 text-left space-y-1">
+          <CardContent className="space-y-4 px-6 text-xs text-slate-600">
+            <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-left space-y-1">
               <div className="flex justify-between">
                 <span>Peran Akun Anda Saat Ini:</span>
-                <Badge variant="outline" className="text-[10px] font-bold">
+                <Badge variant="outline" className="text-[10px] font-semibold bg-white border-slate-200 rounded-md">
                   {user?.role || "DONOR"}
                 </Badge>
               </div>
             </div>
-            <p className="text-[11px] leading-relaxed">
+            <p className="text-[11px] leading-relaxed text-slate-500">
               Untuk mengajukan diri sebagai Inisiator Kampanye, hubungi Administrator sistem PeduliChain untuk verifikasi identitas dan peningkatan peran akun Anda.
             </p>
           </CardContent>
           <CardContent className="pt-0 pb-8 px-6 flex flex-col gap-2">
-            <Button asChild className="w-full font-bold shadow-md shadow-emerald-600/20 rounded-xl">
+            <Button asChild className="w-full font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-none">
               <Link href="/dashboard">Buka Dashboard Donatur Saya</Link>
             </Button>
-            <Button variant="outline" asChild className="w-full text-xs font-semibold rounded-xl border-emerald-200">
+            <Button variant="outline" asChild className="w-full text-xs font-semibold rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50">
               <Link href="/">Kembali ke Katalog Kampanye</Link>
             </Button>
           </CardContent>
@@ -460,23 +459,23 @@ export default function InitiatorDashboardPage() {
     walletData.wallet_address || user?.wallet_address || "0x20100998db146E02FC6A24778B82132C7044bdB4"
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 py-8 max-w-7xl space-y-8">
+    <div className="container mx-auto px-4 sm:px-6 py-8 max-w-7xl space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pb-4 border-b border-emerald-100">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pb-4 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
-            <Badge className="bg-sky-600 text-white font-bold text-xs flex items-center gap-1">
-              <UserCheck className="h-3.5 w-3.5" /> Portal Inisiator Kampanye
+            <Badge className="bg-slate-100 text-slate-800 border-slate-200 font-semibold text-xs flex items-center gap-1 rounded-md">
+              <UserCheck className="h-3.5 w-3.5 text-slate-600" /> Portal Inisiator Kampanye
             </Badge>
-            <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-200 text-[10px] font-bold">
+            <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 text-[10px] font-semibold rounded-md">
               Role: {user?.role || "INITIATOR"}
             </Badge>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-            Dashboard Inisiator - {user?.name || "Inisiator"}
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+            Dashboard Inisiator: {user?.name || "Inisiator"}
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 max-w-2xl">
-            Buat kampanye bantuan bencana baru (<code className="font-mono text-[11px] bg-muted px-1 rounded">POST /campaigns</code>), kelola status program, dan pantau penyaluran dana langsung ke korban bencana.
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5 max-w-2xl">
+            Buat kampanye bantuan bencana baru (<code className="font-mono text-[11px] bg-slate-100 px-1 rounded">POST /campaigns</code>), kelola status program, dan pantau penyaluran dana langsung ke korban bencana.
           </p>
         </div>
 
@@ -484,7 +483,7 @@ export default function InitiatorDashboardPage() {
           <Button
             size="sm"
             onClick={() => setIsCreateOpen(true)}
-            className="rounded-xl font-bold shadow-md shadow-sky-600/20 bg-sky-600 hover:bg-sky-700 text-white gap-1.5"
+            className="rounded-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-none"
           >
             <PlusCircle className="h-4 w-4" /> Buat Kampanye Baru
           </Button>
@@ -493,9 +492,9 @@ export default function InitiatorDashboardPage() {
             size="sm"
             onClick={loadMyCampaigns}
             disabled={isLoadingCampaigns}
-            className="rounded-xl border-emerald-200 text-xs font-semibold gap-1.5"
+            className="rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold gap-1.5"
           >
-            <RefreshCw className={`h-3.5 w-3.5 text-emerald-600 ${isLoadingCampaigns ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-3.5 w-3.5 text-slate-600 ${isLoadingCampaigns ? "animate-spin" : ""}`} />
             Segarkan
           </Button>
         </div>
@@ -503,7 +502,7 @@ export default function InitiatorDashboardPage() {
 
       {/* Global Notifications */}
       {successMessage && (
-        <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-xs text-emerald-900 flex items-start justify-between gap-3 animate-in fade-in-50">
+        <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4 text-xs text-emerald-900 flex items-start justify-between gap-3">
           <div className="flex items-start gap-2.5">
             <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
             <span className="font-semibold">{successMessage}</span>
@@ -518,14 +517,14 @@ export default function InitiatorDashboardPage() {
       )}
 
       {errorMessage && (
-        <div className="rounded-2xl bg-destructive/10 border border-destructive/20 p-4 text-xs text-destructive flex items-start justify-between gap-3 animate-in fade-in-50">
+        <div className="rounded-lg bg-rose-50 border border-rose-200 p-4 text-xs text-rose-900 flex items-start justify-between gap-3">
           <div className="flex items-start gap-2.5">
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+            <AlertCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
             <span>{errorMessage}</span>
           </div>
           <button
             onClick={() => setErrorMessage("")}
-            className="text-destructive font-bold text-xs cursor-pointer"
+            className="text-rose-700 font-bold text-xs cursor-pointer"
           >
             ✕
           </button>
@@ -533,38 +532,38 @@ export default function InitiatorDashboardPage() {
       )}
 
       {/* Initiator Wallet Card (via GET /api/v1/wallet) */}
-      <Card className="rounded-3xl border-sky-100 bg-gradient-to-r from-sky-50/50 via-white to-emerald-50/30 dark:from-sky-950/20 dark:via-card dark:to-card p-5 sm:p-6 shadow-sm">
+      <Card className="rounded-lg border border-slate-200 bg-white p-5 sm:p-6 shadow-none">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-sky-500 to-teal-600 text-white flex items-center justify-center font-extrabold text-lg shadow-sm">
-              <Wallet className="h-6 w-6" />
+            <div className="h-11 w-11 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-base">
+              <Wallet className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Dompet On-Chain Inisiator (Sepolia)
                 </span>
-                <Badge variant="outline" className="bg-white text-sky-700 border-sky-300 text-[9px] font-bold">
+                <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 text-[9px] font-semibold rounded-md">
                   Ethereum Sepolia
                 </Badge>
               </div>
               <div className="flex items-center gap-2 mt-1">
-                <span className="font-mono text-sm font-bold text-sky-950 dark:text-sky-200">
+                <span className="font-mono text-sm font-semibold text-slate-900">
                   {formatAddress(activeWalletAddress)}
                 </span>
                 <button
                   type="button"
                   onClick={() => handleCopyWallet(activeWalletAddress)}
-                  className="text-muted-foreground hover:text-sky-700 cursor-pointer p-1"
+                  className="text-slate-400 hover:text-slate-700 cursor-pointer p-1"
                   title="Salin Alamat Wallet"
                 >
-                  {copiedWallet ? <Check className="h-3.5 w-3.5 text-sky-600" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copiedWallet ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
                 </button>
                 <a
                   href={getAddressExplorerUrl(activeWalletAddress)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-sky-700 p-1"
+                  className="text-slate-400 hover:text-slate-700 p-1"
                   title="Lihat di Sepolia Etherscan"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
@@ -574,24 +573,24 @@ export default function InitiatorDashboardPage() {
           </div>
 
           {/* Wallet Balance Display */}
-          <div className="flex flex-wrap items-center gap-4 bg-white dark:bg-card p-4 rounded-2xl border border-sky-100 shadow-xs">
+          <div className="flex flex-wrap items-center gap-4 bg-slate-50 p-3.5 rounded-lg border border-slate-200">
             <div>
-              <div className="text-[11px] font-bold text-muted-foreground uppercase">Saldo Fiat (Midtrans)</div>
-              <div className="text-xl font-extrabold text-foreground">
+              <div className="text-[11px] font-semibold text-slate-500 uppercase">Saldo Fiat (Midtrans)</div>
+              <div className="text-xl font-bold text-slate-900">
                 {formatRupiah(walletData.balance_idr || 0)}
               </div>
             </div>
-            <div className="h-8 w-px bg-border hidden sm:block" />
+            <div className="h-8 w-px bg-slate-200 hidden sm:block" />
             <div>
-              <div className="text-[11px] font-bold text-muted-foreground uppercase">Saldo On-Chain ETH</div>
-              <div className="text-xl font-extrabold font-mono text-emerald-700">
+              <div className="text-[11px] font-semibold text-slate-500 uppercase">Saldo On-Chain ETH</div>
+              <div className="text-xl font-bold font-mono text-emerald-700">
                 {walletData.balance_eth || "0.0"} ETH
               </div>
             </div>
             <Button
               size="sm"
               onClick={() => setIsTopupModalOpen(true)}
-              className="rounded-xl text-xs font-bold shadow-xs ml-auto"
+              className="rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-none ml-auto"
             >
               <Coins className="h-3.5 w-3.5" /> Top Up Saldo
             </Button>
@@ -601,46 +600,46 @@ export default function InitiatorDashboardPage() {
 
       {/* Metric Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <Card className="rounded-2xl border-sky-100 bg-white dark:bg-card shadow-xs p-5">
+        <Card className="rounded-lg border border-slate-200 bg-white shadow-none p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-muted-foreground uppercase">Total Kampanye</span>
-            <Layers className="h-4.5 w-4.5 text-sky-600" />
+            <span className="text-xs font-semibold text-slate-500 uppercase">Total Kampanye</span>
+            <Layers className="h-4 w-4 text-slate-600" />
           </div>
-          <div className="text-3xl font-extrabold text-foreground mt-2">{myCampaigns.length}</div>
-          <p className="text-xs text-muted-foreground mt-0.5">Program bencana yang Anda kelola</p>
+          <div className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2">{myCampaigns.length}</div>
+          <p className="text-xs text-slate-500 mt-0.5">Program bencana yang Anda kelola</p>
         </Card>
 
-        <Card className="rounded-2xl border-emerald-100 bg-white dark:bg-card shadow-xs p-5">
+        <Card className="rounded-lg border border-slate-200 bg-white shadow-none p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-muted-foreground uppercase">Target Terkumpul</span>
-            <Coins className="h-4.5 w-4.5 text-emerald-600" />
+            <span className="text-xs font-semibold text-slate-500 uppercase">Target Terkumpul</span>
+            <Coins className="h-4 w-4 text-emerald-600" />
           </div>
-          <div className="text-3xl font-extrabold font-mono text-emerald-700 mt-2">
+          <div className="text-2xl sm:text-3xl font-bold font-mono text-emerald-700 mt-2">
             {myCampaigns.reduce((acc, c) => acc + Number(c.target_amount || 0), 0).toFixed(2)} ETH
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">Akumulasi target donasi</p>
+          <p className="text-xs text-slate-500 mt-0.5">Akumulasi target donasi</p>
         </Card>
 
-        <Card className="rounded-2xl border-amber-100 bg-white dark:bg-card shadow-xs p-5">
+        <Card className="rounded-lg border border-slate-200 bg-white shadow-none p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-muted-foreground uppercase">Menunggu Review</span>
-            <Clock className="h-4.5 w-4.5 text-amber-600" />
+            <span className="text-xs font-semibold text-slate-500 uppercase">Menunggu Review</span>
+            <Clock className="h-4 w-4 text-amber-600" />
           </div>
-          <div className="text-3xl font-extrabold text-amber-800 mt-2">
+          <div className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2">
             {myCampaigns.filter((c) => c.status === "PENDING").length}
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">Verifikasi tim kurator admin</p>
+          <p className="text-xs text-slate-500 mt-0.5">Verifikasi tim kurator admin</p>
         </Card>
 
-        <Card className="rounded-2xl border-teal-100 bg-white dark:bg-card shadow-xs p-5">
+        <Card className="rounded-lg border border-slate-200 bg-white shadow-none p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-muted-foreground uppercase">Transparansi Penyaluran</span>
-            <ShieldCheck className="h-4.5 w-4.5 text-teal-600" />
+            <span className="text-xs font-semibold text-slate-500 uppercase">Transparansi Penyaluran</span>
+            <ShieldCheck className="h-4 w-4 text-emerald-600" />
           </div>
-          <div className="text-xl sm:text-2xl font-extrabold text-teal-800 mt-2">
+          <div className="text-xl sm:text-2xl font-bold text-slate-900 mt-2">
             100% On-Chain
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">Tercatat permanen di Sepolia</p>
+          <p className="text-xs text-slate-500 mt-0.5">Tercatat permanen di Sepolia</p>
         </Card>
       </div>
 
@@ -648,96 +647,96 @@ export default function InitiatorDashboardPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-extrabold text-foreground">Daftar Kampanye Bencana yang Anda Buat</h3>
-            <p className="text-xs text-muted-foreground">
-              Dikelola melalui API <code className="font-mono text-[11px] bg-muted px-1 rounded">GET /api/v1/campaigns/me</code>.
+            <h3 className="text-lg font-bold text-slate-900">Daftar Kampanye Bencana yang Anda Buat</h3>
+            <p className="text-xs text-slate-500">
+              Dikelola melalui API <code className="font-mono text-[11px] bg-slate-100 px-1 rounded">GET /api/v1/campaigns/me</code>.
             </p>
           </div>
-          <Badge variant="outline" className="bg-sky-50 text-sky-800 border-sky-200 text-xs font-semibold">
+          <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 text-xs font-medium rounded-md">
             {myCampaigns.length} Kampanye
           </Badge>
         </div>
 
         {isLoadingCampaigns ? (
-          <div className="p-12 text-center space-y-3 bg-white dark:bg-card rounded-2xl border border-sky-100">
-            <Loader2 className="h-8 w-8 animate-spin text-sky-600 mx-auto" />
-            <p className="text-xs text-muted-foreground">Memuat daftar kampanye dari server...</p>
+          <div className="p-12 text-center space-y-3 bg-white rounded-lg border border-slate-200">
+            <Loader2 className="h-8 w-8 animate-spin text-emerald-600 mx-auto" />
+            <p className="text-xs text-slate-500">Memuat daftar kampanye dari server...</p>
           </div>
         ) : myCampaigns.length === 0 ? (
-          <Card className="p-10 text-center space-y-3 rounded-2xl border-dashed border-sky-200 bg-sky-50/20">
-            <HeartHandshake className="h-10 w-10 text-sky-600/60 mx-auto" />
+          <Card className="p-10 text-center space-y-3 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 shadow-none">
+            <HeartHandshake className="h-10 w-10 text-slate-400 mx-auto" />
             <div className="space-y-1">
-              <h4 className="text-sm font-extrabold text-foreground">Belum Ada Kampanye yang Dibuat</h4>
-              <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+              <h4 className="text-sm font-bold text-slate-900">Belum Ada Kampanye yang Dibuat</h4>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
                 Sebagai inisiator, Anda dapat mempublikasikan program bantuan bencana dan menggalang donasi dari publik.
               </p>
             </div>
             <Button
               size="sm"
               onClick={() => setIsCreateOpen(true)}
-              className="rounded-xl font-bold bg-sky-600 hover:bg-sky-700 text-white gap-1.5"
+              className="rounded-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-none"
             >
               <PlusCircle className="h-4 w-4" /> Buat Kampanye Pertama Anda
             </Button>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {myCampaigns.map((camp) => (
               <Card
                 key={camp.id}
-                className="rounded-2xl border-emerald-100 bg-white dark:bg-card shadow-sm hover:border-emerald-300 transition-all overflow-hidden flex flex-col"
+                className="rounded-lg border border-slate-200 bg-white shadow-none hover:border-emerald-500 transition-colors overflow-hidden flex flex-col"
               >
-                <div className="relative h-44 w-full bg-muted overflow-hidden">
+                <div className="relative h-44 w-full bg-slate-100 overflow-hidden">
                   <img
                     src={camp.image_url || "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=800&q=80"}
                     alt={camp.title}
-                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                    className="h-full w-full object-cover"
                   />
-                  <div className="absolute top-3 right-3">
+                  <div className="absolute top-2.5 right-2.5">
                     {getCampaignStatusBadge(camp.status)}
                   </div>
                 </div>
 
                 <CardContent className="p-5 flex-1 flex flex-col justify-between space-y-4">
                   <div className="space-y-1.5">
-                    <h4 className="text-sm font-extrabold text-foreground line-clamp-1">
+                    <h4 className="text-sm font-bold text-slate-900 line-clamp-1">
                       {camp.title}
                     </h4>
-                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
                       {camp.description}
                     </p>
                   </div>
 
                   {/* Rejection Notice if any */}
                   {camp.status === "REJECTED" && camp.rejection_reason && (
-                    <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-[11px] text-rose-900 space-y-0.5">
-                      <span className="font-bold flex items-center gap-1 text-rose-700">
+                    <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-[11px] text-rose-900 space-y-0.5">
+                      <span className="font-semibold flex items-center gap-1 text-rose-700">
                         <AlertTriangle className="h-3 w-3" /> Catatan Penolakan Admin:
                       </span>
                       <p>{camp.rejection_reason}</p>
                     </div>
                   )}
 
-                  <div className="space-y-2 pt-2 border-t border-emerald-100">
+                  <div className="space-y-1.5 pt-2 border-t border-slate-100">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-muted-foreground">Target Donasi:</span>
-                      <span className="font-mono font-extrabold text-emerald-700">
+                      <span className="text-slate-500">Target Donasi:</span>
+                      <span className="font-mono font-bold text-emerald-700">
                         {camp.target_amount} ETH
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-muted-foreground">Dibuat Pada:</span>
-                      <span>{camp.created_at ? formatDate(camp.created_at) : "-"}</span>
+                      <span className="text-slate-500">Dibuat Pada:</span>
+                      <span className="text-slate-700">{camp.created_at ? formatDate(camp.created_at) : "-"}</span>
                     </div>
                   </div>
 
                   {/* Action Buttons for Initiator */}
-                  <div className="grid grid-cols-2 gap-2 pt-1 border-t border-emerald-50">
+                  <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => openDonatursModal(camp)}
-                      className="text-[11px] font-semibold rounded-xl border-emerald-200 text-emerald-800 hover:bg-emerald-50 gap-1 h-8"
+                      className="text-[11px] font-semibold rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 gap-1 h-8"
                     >
                       <HeartHandshake className="h-3.5 w-3.5 text-emerald-600" /> Donatur
                     </Button>
@@ -745,9 +744,9 @@ export default function InitiatorDashboardPage() {
                       size="sm"
                       variant="outline"
                       onClick={() => openDisbursementsModal(camp)}
-                      className="text-[11px] font-semibold rounded-xl border-teal-200 text-teal-800 hover:bg-teal-50 gap-1 h-8"
+                      className="text-[11px] font-semibold rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 gap-1 h-8"
                     >
-                      <DollarSign className="h-3.5 w-3.5 text-teal-600" /> Pencairan
+                      <DollarSign className="h-3.5 w-3.5 text-emerald-600" /> Pencairan
                     </Button>
                   </div>
 
@@ -756,7 +755,7 @@ export default function InitiatorDashboardPage() {
                       size="sm"
                       variant="outline"
                       onClick={() => openEditModal(camp)}
-                      className="flex-1 text-xs font-semibold rounded-xl border-emerald-200 gap-1"
+                      className="flex-1 text-xs font-semibold rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 gap-1"
                     >
                       <Edit className="h-3.5 w-3.5" /> Edit
                     </Button>
@@ -766,7 +765,7 @@ export default function InitiatorDashboardPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => openCloseModal(camp)}
-                        className="text-xs font-semibold rounded-xl border-amber-300 text-amber-800 hover:bg-amber-50 px-3"
+                        className="text-xs font-semibold rounded-lg border-slate-200 text-amber-800 hover:bg-amber-50 px-3"
                         title="Tutup Kampanye"
                       >
                         <Lock className="h-3.5 w-3.5" /> Tutup
@@ -777,7 +776,7 @@ export default function InitiatorDashboardPage() {
                       size="sm"
                       variant="ghost"
                       onClick={() => openDeleteModal(camp)}
-                      className="text-muted-foreground hover:text-destructive p-2"
+                      className="text-slate-400 hover:text-rose-600 p-2 rounded-lg"
                       title="Hapus Kampanye"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -804,7 +803,7 @@ export default function InitiatorDashboardPage() {
 
       {/* ================= MODAL 1: BUAT KAMPANYE BARU (POST /campaigns) ================= */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="max-w-lg p-6 rounded-3xl border-emerald-200/90 shadow-2xl bg-white dark:bg-card">
+        <DialogContent className="max-w-lg p-6 rounded-lg border border-slate-200 shadow-lg bg-white">
           <form onSubmit={handleCreateCampaignSubmit} className="space-y-4">
             <DialogHeader className="text-left space-y-1">
               <div className="flex items-center gap-2">
@@ -930,7 +929,7 @@ export default function InitiatorDashboardPage() {
 
       {/* ================= MODAL 2: EDIT KAMPANYE (PATCH /campaigns/{id}) ================= */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="max-w-lg p-6 rounded-3xl border-emerald-200 shadow-2xl bg-white dark:bg-card">
+        <DialogContent className="max-w-lg p-6 rounded-lg border border-slate-200 shadow-lg bg-white">
           <form onSubmit={handleEditCampaignSubmit} className="space-y-4">
             <DialogHeader className="text-left space-y-1">
               <div className="flex items-center gap-2">
@@ -1017,7 +1016,7 @@ export default function InitiatorDashboardPage() {
 
       {/* ================= MODAL 3: TUTUP KAMPANYE (PATCH /campaigns/{id}/close) ================= */}
       <Dialog open={isCloseOpen} onOpenChange={setIsCloseOpen}>
-        <DialogContent className="max-w-md p-6 rounded-3xl border-amber-200 shadow-2xl bg-white dark:bg-card">
+        <DialogContent className="max-w-md p-6 rounded-lg border border-slate-200 shadow-lg bg-white">
           <DialogHeader className="text-left space-y-1">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
@@ -1063,7 +1062,7 @@ export default function InitiatorDashboardPage() {
 
       {/* ================= MODAL 4: HAPUS KAMPANYE (DELETE /campaigns/{id}) ================= */}
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent className="max-w-md p-6 rounded-3xl border-destructive/20 shadow-2xl bg-white dark:bg-card">
+        <DialogContent className="max-w-md p-6 rounded-lg border border-slate-200 shadow-lg bg-white">
           <DialogHeader className="text-left space-y-1">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center">
@@ -1109,7 +1108,7 @@ export default function InitiatorDashboardPage() {
 
       {/* ================= MODAL 5: DAFTAR DONATUR (GET /campaigns/{id}/donaturs) ================= */}
       <Dialog open={isDonatursOpen} onOpenChange={setIsDonatursOpen}>
-        <DialogContent className="max-w-2xl p-6 rounded-3xl border-emerald-200 shadow-2xl bg-white dark:bg-card">
+        <DialogContent className="max-w-2xl p-6 rounded-lg border border-slate-200 shadow-lg bg-white">
           <DialogHeader className="text-left space-y-1">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
@@ -1186,7 +1185,7 @@ export default function InitiatorDashboardPage() {
 
       {/* ================= MODAL 6: DAFTAR PENCAIRAN (GET /campaigns/{id}/disbursements) ================= */}
       <Dialog open={isDisbursementsOpen} onOpenChange={setIsDisbursementsOpen}>
-        <DialogContent className="max-w-2xl p-6 rounded-3xl border-teal-200 shadow-2xl bg-white dark:bg-card">
+        <DialogContent className="max-w-2xl p-6 rounded-lg border border-slate-200 shadow-lg bg-white">
           <DialogHeader className="text-left space-y-1">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center">

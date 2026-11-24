@@ -543,40 +543,39 @@ export default function AdminPage() {
   if (!isAuthenticated || user?.role !== "ADMIN") {
     return (
       <div className="container mx-auto px-4 py-16 max-w-lg">
-        <Card className="rounded-3xl border-destructive/30 bg-white dark:bg-card shadow-xl text-center overflow-hidden">
-          <div className="h-2 bg-gradient-to-r from-red-500 via-amber-500 to-red-600" />
+        <Card className="rounded-lg border border-slate-200 bg-white text-center overflow-hidden shadow-none">
           <CardHeader className="pt-8 pb-4">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-3 shadow-inner">
-              <ShieldAlert className="h-7 w-7" />
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-slate-700 mb-3">
+              <ShieldAlert className="h-6 w-6 text-rose-600" />
             </div>
-            <CardTitle className="text-xl font-extrabold text-foreground">
+            <CardTitle className="text-xl font-bold text-slate-900">
               Akses Dibatasi: Khusus Administrator
             </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+            <CardDescription className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
               Halaman ini diperuntukkan secara eksklusif bagi administrator untuk mengelola hak akses akun donatur, peran inisiator, dan moderasi kampanye bencana.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 px-6 text-xs text-muted-foreground">
-            <div className="rounded-xl bg-muted/60 p-3 text-left space-y-1">
+          <CardContent className="space-y-4 px-6 text-xs text-slate-600">
+            <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-left space-y-1">
               <div className="flex justify-between">
                 <span>Status Akun:</span>
-                <span className="font-semibold text-foreground">
+                <span className="font-semibold text-slate-900">
                   {isAuthenticated ? "Terautentikasi" : "Belum Masuk"}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span>Peran Akun Anda:</span>
-                <Badge variant="outline" className="text-[10px] font-bold">
+                <Badge variant="outline" className="text-[10px] font-semibold bg-white border-slate-200 rounded-md">
                   {user?.role || "GUEST"}
                 </Badge>
               </div>
             </div>
           </CardContent>
           <CardContent className="pt-0 pb-8 px-6 flex flex-col gap-2">
-            <Button asChild className="w-full font-bold shadow-md shadow-emerald-600/20 rounded-xl">
+            <Button asChild className="w-full font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-none">
               <Link href="/auth/login">Masuk dengan Akun Admin</Link>
             </Button>
-            <Button variant="outline" asChild className="w-full text-xs font-semibold rounded-xl border-emerald-200">
+            <Button variant="outline" asChild className="w-full text-xs font-semibold rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50">
               <Link href="/dashboard">Kembali ke Dashboard</Link>
             </Button>
           </CardContent>
@@ -589,22 +588,22 @@ export default function AdminPage() {
     walletData.wallet_address || user?.wallet_address || "0x275E9554066767Cc65AaDAa5F4898D5E67bD0908"
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 py-8 max-w-7xl space-y-8">
+    <div className="container mx-auto px-4 sm:px-6 py-8 max-w-7xl space-y-6">
       {/* Top Banner / Header */}
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pb-4 border-b border-emerald-100">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pb-4 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
-            <Badge className="bg-emerald-600 text-white font-bold text-xs flex items-center gap-1">
-              <ShieldCheck className="h-3.5 w-3.5" /> Panel Kontrol Administrator
+            <Badge className="bg-slate-100 text-slate-800 border-slate-200 font-semibold text-xs flex items-center gap-1 rounded-md">
+              <ShieldCheck className="h-3.5 w-3.5 text-slate-600" /> Panel Kontrol Administrator
             </Badge>
-            <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300 text-[10px] font-bold">
+            <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 text-[10px] font-semibold rounded-md">
               Role: ADMIN
             </Badge>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
             Pusat Kendali Sistem & Moderasi
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 max-w-2xl">
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5 max-w-2xl">
             Kelola persetujuan kampanye bencana darurat, pantau alur pencairan dana, dan ubah hak akses pengguna dari <strong>DONOR</strong> menjadi <strong>INITIATOR</strong>.
           </p>
         </div>
@@ -618,9 +617,9 @@ export default function AdminPage() {
               else loadUsers()
             }}
             disabled={isLoadingCampaigns || isLoadingUsers}
-            className="rounded-xl border-emerald-200 text-xs font-semibold gap-1.5"
+            className="rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold gap-1.5"
           >
-            <RefreshCw className={`h-3.5 w-3.5 text-emerald-600 ${isLoadingCampaigns || isLoadingUsers ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-3.5 w-3.5 text-slate-600 ${isLoadingCampaigns || isLoadingUsers ? "animate-spin" : ""}`} />
             Segarkan Data
           </Button>
         </div>
@@ -628,7 +627,7 @@ export default function AdminPage() {
 
       {/* Global Notifications */}
       {successMessage && (
-        <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-xs text-emerald-900 flex items-start justify-between gap-3 animate-in fade-in-50">
+        <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4 text-xs text-emerald-900 flex items-start justify-between gap-3">
           <div className="flex items-start gap-2.5">
             <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
             <span className="font-semibold">{successMessage}</span>
@@ -643,14 +642,14 @@ export default function AdminPage() {
       )}
 
       {errorMessage && (
-        <div className="rounded-2xl bg-destructive/10 border border-destructive/20 p-4 text-xs text-destructive flex items-start justify-between gap-3 animate-in fade-in-50">
+        <div className="rounded-lg bg-rose-50 border border-rose-200 p-4 text-xs text-rose-900 flex items-start justify-between gap-3">
           <div className="flex items-start gap-2.5">
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+            <AlertCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
             <span>{errorMessage}</span>
           </div>
           <button
             onClick={() => setErrorMessage("")}
-            className="text-destructive font-bold text-xs cursor-pointer"
+            className="text-rose-700 font-bold text-xs cursor-pointer"
           >
             ✕
           </button>
@@ -658,29 +657,29 @@ export default function AdminPage() {
       )}
 
       {/* Admin Wallet Card (via GET /api/v1/wallet) */}
-      <Card className="rounded-3xl border-emerald-100 bg-gradient-to-r from-emerald-50/50 via-white to-teal-50/40 dark:from-emerald-950/20 dark:via-card dark:to-card p-5 sm:p-6 shadow-sm">
+      <Card className="rounded-lg border border-slate-200 bg-white p-5 sm:p-6 shadow-none">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center font-extrabold text-lg shadow-sm">
-              <Wallet className="h-6 w-6" />
+            <div className="h-11 w-11 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-base">
+              <Wallet className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Alamat Wallet Administrator (Sepolia)
                 </span>
-                <Badge variant="outline" className="bg-white text-emerald-700 border-emerald-300 text-[9px] font-bold">
+                <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 text-[9px] font-semibold rounded-md">
                   Ethereum Sepolia
                 </Badge>
               </div>
               <div className="flex items-center gap-2 mt-1">
-                <span className="font-mono text-sm font-bold text-emerald-950 dark:text-emerald-200">
+                <span className="font-mono text-sm font-semibold text-slate-900">
                   {formatAddress(activeWalletAddress)}
                 </span>
                 <button
                   type="button"
                   onClick={() => handleCopyWallet(activeWalletAddress)}
-                  className="text-muted-foreground hover:text-emerald-700 cursor-pointer p-1"
+                  className="text-slate-400 hover:text-slate-700 cursor-pointer p-1"
                   title="Salin Alamat Wallet"
                 >
                   {copiedAddress === activeWalletAddress ? (
@@ -693,7 +692,7 @@ export default function AdminPage() {
                   href={getAddressExplorerUrl(activeWalletAddress)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-emerald-700 p-1"
+                  className="text-slate-400 hover:text-slate-700 p-1"
                   title="Buka di Etherscan"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
@@ -702,17 +701,17 @@ export default function AdminPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 bg-white dark:bg-card p-4 rounded-2xl border border-emerald-100 shadow-xs">
+          <div className="flex flex-wrap items-center gap-4 bg-slate-50 p-3.5 rounded-lg border border-slate-200">
             <div>
-              <div className="text-[11px] font-bold text-muted-foreground uppercase">Saldo Kas Administrator</div>
-              <div className="text-xl font-extrabold text-foreground">
+              <div className="text-[11px] font-semibold text-slate-500 uppercase">Saldo Kas Administrator</div>
+              <div className="text-xl font-bold text-slate-900">
                 {formatRupiah(walletData.balance_idr || 0)}
               </div>
             </div>
-            <div className="h-8 w-px bg-border hidden sm:block" />
+            <div className="h-8 w-px bg-slate-200 hidden sm:block" />
             <div>
-              <div className="text-[11px] font-bold text-muted-foreground uppercase">Saldo On-Chain ETH</div>
-              <div className="text-xl font-extrabold font-mono text-emerald-700">
+              <div className="text-[11px] font-semibold text-slate-500 uppercase">Saldo On-Chain ETH</div>
+              <div className="text-xl font-bold font-mono text-emerald-700">
                 {walletData.balance_eth || "0.0"} ETH
               </div>
             </div>
@@ -721,19 +720,19 @@ export default function AdminPage() {
       </Card>
 
       {/* Main Tab Navigation Buttons */}
-      <div className="flex items-center gap-2 border-b border-emerald-100 pb-2">
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
         <button
           type="button"
           onClick={() => setActiveTab("campaigns")}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg font-semibold text-xs transition-colors ${
             activeTab === "campaigns"
-              ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
-              : "bg-muted/60 text-muted-foreground hover:bg-emerald-50 hover:text-emerald-800"
+              ? "bg-emerald-600 text-white"
+              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
           }`}
         >
           <Layers className="h-4 w-4" /> Moderasi & Manajemen Kampanye
           {countPending > 0 && (
-            <span className="bg-amber-400 text-amber-950 px-1.5 py-0.2 rounded-full text-[10px] font-black">
+            <span className="bg-amber-400 text-amber-950 px-1.5 py-0.2 rounded-md text-[10px] font-bold">
               {countPending}
             </span>
           )}
@@ -742,14 +741,14 @@ export default function AdminPage() {
         <button
           type="button"
           onClick={() => setActiveTab("users")}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg font-semibold text-xs transition-colors ${
             activeTab === "users"
-              ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
-              : "bg-muted/60 text-muted-foreground hover:bg-emerald-50 hover:text-emerald-800"
+              ? "bg-emerald-600 text-white"
+              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
           }`}
         >
           <Users className="h-4 w-4" /> Manajemen Pengguna & Peran Inisiator
-          <span className="bg-muted text-foreground px-1.5 py-0.2 rounded-full text-[10px] font-bold">
+          <span className="bg-slate-200 text-slate-800 px-1.5 py-0.2 rounded-md text-[10px] font-semibold">
             {usersList.length}
           </span>
         </button>
@@ -757,50 +756,50 @@ export default function AdminPage() {
 
       {/* ================= TAB 1: MODERASI KAMPANYE ================= */}
       {activeTab === "campaigns" && (
-        <div className="space-y-6 animate-in fade-in duration-200">
+        <div className="space-y-6">
           {/* Metric Summary Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Card className="rounded-2xl border-emerald-100 bg-white dark:bg-card p-4 shadow-xs">
-              <span className="text-[11px] font-bold text-muted-foreground uppercase">Total Kampanye</span>
-              <div className="text-2xl font-extrabold text-foreground mt-1">{campaignsList.length}</div>
-              <span className="text-[10px] text-muted-foreground">Semua status program</span>
+            <Card className="rounded-lg border border-slate-200 bg-white p-4 shadow-none">
+              <span className="text-[11px] font-semibold text-slate-500 uppercase">Total Kampanye</span>
+              <div className="text-2xl font-bold text-slate-900 mt-1">{campaignsList.length}</div>
+              <span className="text-[10px] text-slate-500">Semua status program</span>
             </Card>
 
-            <Card className="rounded-2xl border-amber-200 bg-amber-50/40 dark:bg-card p-4 shadow-xs">
-              <span className="text-[11px] font-bold text-amber-900 dark:text-amber-300 uppercase">Perlu Disetujui</span>
-              <div className="text-2xl font-extrabold text-amber-900 dark:text-amber-300 mt-1">{countPending}</div>
-              <span className="text-[10px] text-amber-800/80">Status PENDING</span>
+            <Card className="rounded-lg border border-slate-200 bg-white p-4 shadow-none">
+              <span className="text-[11px] font-semibold text-amber-700 uppercase">Perlu Disetujui</span>
+              <div className="text-2xl font-bold text-slate-900 mt-1">{countPending}</div>
+              <span className="text-[10px] text-amber-700">Status PENDING</span>
             </Card>
 
-            <Card className="rounded-2xl border-emerald-200 bg-emerald-50/40 dark:bg-card p-4 shadow-xs">
-              <span className="text-[11px] font-bold text-emerald-900 dark:text-emerald-300 uppercase">Aktif / Disetujui</span>
-              <div className="text-2xl font-extrabold text-emerald-800 dark:text-emerald-300 mt-1">{countActive}</div>
-              <span className="text-[10px] text-emerald-800/80">Menerima donasi</span>
+            <Card className="rounded-lg border border-slate-200 bg-white p-4 shadow-none">
+              <span className="text-[11px] font-semibold text-emerald-700 uppercase">Aktif / Disetujui</span>
+              <div className="text-2xl font-bold text-slate-900 mt-1">{countActive}</div>
+              <span className="text-[10px] text-emerald-700">Menerima donasi</span>
             </Card>
 
-            <Card className="rounded-2xl border-rose-100 bg-rose-50/30 dark:bg-card p-4 shadow-xs">
-              <span className="text-[11px] font-bold text-rose-900 dark:text-rose-300 uppercase">Ditolak / Ditutup</span>
-              <div className="text-2xl font-extrabold text-rose-900 dark:text-rose-300 mt-1">{countRejected + countClosed}</div>
-              <span className="text-[10px] text-rose-800/80">{countRejected} ditolak, {countClosed} selesai</span>
+            <Card className="rounded-lg border border-slate-200 bg-white p-4 shadow-none">
+              <span className="text-[11px] font-semibold text-slate-500 uppercase">Ditolak / Ditutup</span>
+              <div className="text-2xl font-bold text-slate-900 mt-1">{countRejected + countClosed}</div>
+              <span className="text-[10px] text-slate-500">{countRejected} ditolak, {countClosed} selesai</span>
             </Card>
           </div>
 
           {/* Filter Bar */}
-          <Card className="rounded-2xl border-emerald-100 bg-white dark:bg-card p-4 shadow-xs">
+          <Card className="rounded-lg border border-slate-200 bg-white p-4 shadow-none">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="relative w-full md:w-80">
-                <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <Input
                   placeholder="Cari judul, ID, atau deskripsi..."
                   value={campaignSearchTerm}
                   onChange={(e) => setCampaignSearchTerm(e.target.value)}
-                  className="pl-9 text-xs rounded-xl border-emerald-200 focus-visible:ring-emerald-500"
+                  className="pl-9 text-xs rounded-lg border-slate-200"
                 />
               </div>
 
               {/* Status Filter Badges */}
               <div className="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
-                <span className="text-xs font-bold text-muted-foreground mr-1 flex items-center gap-1">
+                <span className="text-xs font-semibold text-slate-500 mr-1 flex items-center gap-1">
                   <Filter className="h-3 w-3" /> Status:
                 </span>
                 {["ALL", "PENDING", "APPROVED", "ACTIVE", "CLOSED", "REJECTED"].map((st) => (
@@ -809,10 +808,10 @@ export default function AdminPage() {
                     variant={campaignStatusFilter === st ? "default" : "outline"}
                     size="sm"
                     onClick={() => setCampaignStatusFilter(st)}
-                    className={`rounded-xl text-[11px] h-8 px-3 font-semibold ${
+                    className={`rounded-lg text-[11px] h-8 px-3 font-semibold ${
                       campaignStatusFilter === st
-                        ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                        : "border-emerald-200 text-foreground hover:bg-emerald-50"
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-none"
+                        : "border-slate-200 text-slate-700 hover:bg-slate-50"
                     }`}
                   >
                     {st === "ALL" ? "Semua" : st}
@@ -823,14 +822,14 @@ export default function AdminPage() {
           </Card>
 
           {/* Campaigns Table Card */}
-          <Card className="rounded-3xl border-emerald-100 bg-white dark:bg-card shadow-sm overflow-hidden">
-            <CardHeader className="p-5 pb-3 border-b border-emerald-50">
+          <Card className="rounded-lg border border-slate-200 bg-white shadow-none overflow-hidden">
+            <CardHeader className="p-5 pb-3 border-b border-slate-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base font-extrabold text-foreground flex items-center gap-2">
+                  <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
                     <Layers className="h-4 w-4 text-emerald-600" /> Daftar Kampanye Bencana (GET /api/v1/campaigns/all)
                   </CardTitle>
-                  <CardDescription className="text-xs text-muted-foreground">
+                  <CardDescription className="text-xs text-slate-500">
                     Menampilkan {filteredCampaigns.length} kampanye tanggap darurat
                   </CardDescription>
                 </div>
@@ -841,13 +840,13 @@ export default function AdminPage() {
               {isLoadingCampaigns ? (
                 <div className="p-12 text-center space-y-3">
                   <Loader2 className="h-8 w-8 animate-spin text-emerald-600 mx-auto" />
-                  <p className="text-xs text-muted-foreground font-medium">Memuat data kampanye dari server...</p>
+                  <p className="text-xs text-slate-500">Memuat data kampanye dari server...</p>
                 </div>
               ) : filteredCampaigns.length === 0 ? (
                 <div className="p-12 text-center space-y-2">
-                  <HeartHandshake className="h-10 w-10 text-muted-foreground/40 mx-auto" />
-                  <p className="text-sm font-bold text-foreground">Tidak Ada Kampanye yang Ditemukan</p>
-                  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                  <HeartHandshake className="h-10 w-10 text-slate-300 mx-auto" />
+                  <p className="text-sm font-bold text-slate-900">Tidak Ada Kampanye yang Ditemukan</p>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
                     Belum ada kampanye bencana dengan kriteria pencarian atau status yang dipilih.
                   </p>
                 </div>
@@ -855,48 +854,48 @@ export default function AdminPage() {
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-emerald-50/50 hover:bg-emerald-50/50">
-                        <TableHead className="w-14 text-xs font-bold text-emerald-950">Foto</TableHead>
-                        <TableHead className="text-xs font-bold text-emerald-950">Kampanye Bencana</TableHead>
-                        <TableHead className="text-xs font-bold text-emerald-950">Target (ETH)</TableHead>
-                        <TableHead className="text-xs font-bold text-emerald-950">Status</TableHead>
-                        <TableHead className="text-xs font-bold text-emerald-950">Dibuat Pada</TableHead>
-                        <TableHead className="text-xs font-bold text-emerald-950 text-right">Aksi Moderasi</TableHead>
+                      <TableRow className="bg-slate-50 border-b border-slate-200">
+                        <TableHead className="w-14 text-xs font-semibold text-slate-700">Foto</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-700">Kampanye Bencana</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-700">Target (ETH)</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-700">Status</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-700">Dibuat Pada</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-700 text-right">Aksi Moderasi</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredCampaigns.map((camp) => (
-                        <TableRow key={camp.id} className="hover:bg-emerald-50/30 transition-colors">
+                        <TableRow key={camp.id} className="hover:bg-slate-50/50 border-b border-slate-100 transition-colors">
                           <TableCell className="p-3">
                             <img
                               src={camp.image_url || "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=200&q=80"}
                               alt={camp.title}
-                              className="h-12 w-12 rounded-xl object-cover border border-emerald-100"
+                              className="h-12 w-12 rounded-lg object-cover border border-slate-200"
                             />
                           </TableCell>
                           <TableCell className="p-3">
-                            <div className="font-bold text-xs text-foreground line-clamp-1">
+                            <div className="font-bold text-xs text-slate-900 line-clamp-1">
                               {camp.title}
                             </div>
-                            <div className="text-[11px] text-muted-foreground line-clamp-1 max-w-md mt-0.5">
+                            <div className="text-[11px] text-slate-500 line-clamp-1 max-w-md mt-0.5">
                               {camp.description}
                             </div>
-                            <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
-                              <span className="font-mono bg-muted px-1 rounded">ID: {camp.id?.slice(0, 8)}...</span>
+                            <div className="flex items-center gap-2 mt-1 text-[10px] text-slate-400">
+                              <span className="font-mono bg-slate-100 px-1 rounded">ID: {camp.id?.slice(0, 8)}...</span>
                               {camp.rejection_reason && (
-                                <span className="text-rose-700 bg-rose-50 px-1 rounded font-semibold">
+                                <span className="text-rose-700 bg-rose-50 px-1 rounded font-medium">
                                   Alasan: {camp.rejection_reason}
                                 </span>
                               )}
                             </div>
                           </TableCell>
-                          <TableCell className="p-3 font-mono text-xs font-extrabold text-emerald-700">
+                          <TableCell className="p-3 font-mono text-xs font-bold text-emerald-700">
                             {camp.target_amount} ETH
                           </TableCell>
                           <TableCell className="p-3">
                             {getCampaignStatusBadge(camp.status)}
                           </TableCell>
-                          <TableCell className="p-3 text-[11px] text-muted-foreground">
+                          <TableCell className="p-3 text-[11px] text-slate-500">
                             {camp.created_at ? formatDate(camp.created_at) : "-"}
                           </TableCell>
                           <TableCell className="p-3 text-right">
@@ -1013,21 +1012,21 @@ export default function AdminPage() {
 
       {/* ================= TAB 2: MANAJEMEN PENGGUNA ================= */}
       {activeTab === "users" && (
-        <div className="space-y-6 animate-in fade-in duration-200">
-          <Card className="rounded-2xl border-emerald-100 bg-white dark:bg-card p-4 shadow-xs">
+        <div className="space-y-6">
+          <Card className="rounded-lg border border-slate-200 bg-white p-4 shadow-none">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="relative w-full md:w-80">
-                <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <Input
                   placeholder="Cari nama, email, atau wallet..."
                   value={userSearchTerm}
                   onChange={(e) => setUserSearchTerm(e.target.value)}
-                  className="pl-9 text-xs rounded-xl border-emerald-200 focus-visible:ring-emerald-500"
+                  className="pl-9 text-xs rounded-lg border-slate-200"
                 />
               </div>
 
               <div className="flex items-center gap-2 w-full md:w-auto">
-                <span className="text-xs font-bold text-muted-foreground flex items-center gap-1">
+                <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
                   <Filter className="h-3 w-3" /> Filter Peran:
                 </span>
                 {["ALL", "DONOR", "INITIATOR", "ADMIN"].map((r) => (
@@ -1036,10 +1035,10 @@ export default function AdminPage() {
                     variant={userRoleFilter === r ? "default" : "outline"}
                     size="sm"
                     onClick={() => setUserRoleFilter(r)}
-                    className={`rounded-xl text-[11px] h-8 px-3 font-semibold ${
+                    className={`rounded-lg text-[11px] h-8 px-3 font-semibold ${
                       userRoleFilter === r
-                        ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                        : "border-emerald-200 text-foreground hover:bg-emerald-50"
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-none"
+                        : "border-slate-200 text-slate-700 hover:bg-slate-50"
                     }`}
                   >
                     {r}
@@ -1049,12 +1048,12 @@ export default function AdminPage() {
             </div>
           </Card>
 
-          <Card className="rounded-3xl border-emerald-100 bg-white dark:bg-card shadow-sm overflow-hidden">
-            <CardHeader className="p-5 pb-3 border-b border-emerald-50">
-              <CardTitle className="text-base font-extrabold text-foreground flex items-center gap-2">
+          <Card className="rounded-lg border border-slate-200 bg-white shadow-none overflow-hidden">
+            <CardHeader className="p-5 pb-3 border-b border-slate-100">
+              <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
                 <Users className="h-4 w-4 text-emerald-600" /> Daftar Pengguna Terdaftar (GET /api/v1/users)
               </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">
+              <CardDescription className="text-xs text-slate-500">
                 Menampilkan {filteredUsers.length} pengguna terdaftar
               </CardDescription>
             </CardHeader>
@@ -1062,40 +1061,40 @@ export default function AdminPage() {
               {isLoadingUsers ? (
                 <div className="p-12 text-center space-y-3">
                   <Loader2 className="h-8 w-8 animate-spin text-emerald-600 mx-auto" />
-                  <p className="text-xs text-muted-foreground font-medium">Memuat data pengguna...</p>
+                  <p className="text-xs text-slate-500">Memuat data pengguna...</p>
                 </div>
               ) : filteredUsers.length === 0 ? (
                 <div className="p-12 text-center space-y-2">
-                  <User className="h-10 w-10 text-muted-foreground/40 mx-auto" />
-                  <p className="text-sm font-bold text-foreground">Tidak Ada Pengguna Ditemukan</p>
+                  <User className="h-10 w-10 text-slate-300 mx-auto" />
+                  <p className="text-sm font-bold text-slate-900">Tidak Ada Pengguna Ditemukan</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-emerald-50/50 hover:bg-emerald-50/50">
-                        <TableHead className="text-xs font-bold text-emerald-950">Nama & Email</TableHead>
-                        <TableHead className="text-xs font-bold text-emerald-950">Peran Akun</TableHead>
-                        <TableHead className="text-xs font-bold text-emerald-950">Alamat Dompet Sepolia</TableHead>
-                        <TableHead className="text-xs font-bold text-emerald-950">Terdaftar Pada</TableHead>
-                        <TableHead className="text-xs font-bold text-emerald-950 text-right">Ubah Hak Akses</TableHead>
+                      <TableRow className="bg-slate-50 border-b border-slate-200">
+                        <TableHead className="text-xs font-semibold text-slate-700">Nama & Email</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-700">Peran Akun</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-700">Alamat Dompet Sepolia</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-700">Terdaftar Pada</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-700 text-right">Ubah Hak Akses</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredUsers.map((item) => (
-                        <TableRow key={item.id} className="hover:bg-emerald-50/30 transition-colors">
+                        <TableRow key={item.id} className="hover:bg-slate-50/50 border-b border-slate-100 transition-colors">
                           <TableCell className="p-3">
-                            <div className="font-bold text-xs text-foreground">{item.name || "Pengguna"}</div>
-                            <div className="text-[11px] text-muted-foreground">{item.email}</div>
+                            <div className="font-bold text-xs text-slate-900">{item.name || "Pengguna"}</div>
+                            <div className="text-[11px] text-slate-500">{item.email}</div>
                           </TableCell>
                           <TableCell className="p-3">{getRoleBadge(item.role)}</TableCell>
                           <TableCell className="p-3 font-mono text-xs">
                             <div className="flex items-center gap-1.5">
-                              <span>{formatAddress(item.wallet_address)}</span>
+                              <span className="text-slate-800">{formatAddress(item.wallet_address)}</span>
                               <button
                                 type="button"
                                 onClick={() => handleCopyWallet(item.wallet_address)}
-                                className="text-muted-foreground hover:text-emerald-700 p-1"
+                                className="text-slate-400 hover:text-slate-700 p-1 cursor-pointer"
                               >
                                 {copiedAddress === item.wallet_address ? (
                                   <Check className="h-3 w-3 text-emerald-600" />
@@ -1105,17 +1104,17 @@ export default function AdminPage() {
                               </button>
                             </div>
                           </TableCell>
-                          <TableCell className="p-3 text-[11px] text-muted-foreground">
+                          <TableCell className="p-3 text-[11px] text-slate-500">
                             {item.created_at ? formatDate(item.created_at) : "-"}
                           </TableCell>
                           <TableCell className="p-3 text-right">
                             {item.role === "ADMIN" ? (
-                              <span className="text-[11px] font-semibold text-muted-foreground italic">Admin Sistem</span>
+                              <span className="text-[11px] font-semibold text-slate-400 italic">Admin Sistem</span>
                             ) : item.role === "DONOR" ? (
                               <Button
                                 size="sm"
                                 onClick={() => openRoleDialog(item, "INITIATOR")}
-                                className="h-8 px-3 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white rounded-xl shadow-xs gap-1"
+                                className="h-8 px-3 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-none gap-1"
                               >
                                 <UserCheck className="h-3.5 w-3.5" /> Jadikan INITIATOR
                               </Button>
@@ -1124,7 +1123,7 @@ export default function AdminPage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => openRoleDialog(item, "DONOR")}
-                                className="h-8 px-3 text-xs font-bold border-emerald-300 text-emerald-800 hover:bg-emerald-50 rounded-xl gap-1"
+                                className="h-8 px-3 text-xs font-semibold border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg gap-1"
                               >
                                 <HeartHandshake className="h-3.5 w-3.5 text-emerald-600" /> Kembalikan ke DONOR
                               </Button>
@@ -1143,7 +1142,7 @@ export default function AdminPage() {
 
       {/* ================= MODAL 1: TOLAK KAMPANYE ================= */}
       <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
-        <DialogContent className="max-w-md p-6 rounded-3xl border-rose-200 shadow-2xl bg-white dark:bg-card">
+        <DialogContent className="max-w-md p-6 rounded-lg border border-slate-200 shadow-lg bg-white">
           <DialogHeader className="text-left space-y-1">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center">
@@ -1205,7 +1204,7 @@ export default function AdminPage() {
 
       {/* ================= MODAL 2: EDIT KAMPANYE ================= */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-lg p-6 rounded-3xl border-emerald-200 shadow-2xl bg-white dark:bg-card">
+        <DialogContent className="max-w-lg p-6 rounded-lg border border-slate-200 shadow-lg bg-white">
           <form onSubmit={handleConfirmUpdate} className="space-y-4">
             <DialogHeader className="text-left space-y-1">
               <div className="flex items-center gap-2">
@@ -1305,7 +1304,7 @@ export default function AdminPage() {
 
       {/* ================= MODAL 3: TUTUP KAMPANYE ================= */}
       <Dialog open={isCloseDialogOpen} onOpenChange={setIsCloseDialogOpen}>
-        <DialogContent className="max-w-md p-6 rounded-3xl border-amber-200 shadow-2xl bg-white dark:bg-card">
+        <DialogContent className="max-w-md p-6 rounded-lg border border-slate-200 shadow-lg bg-white">
           <DialogHeader className="text-left space-y-1">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
@@ -1351,7 +1350,7 @@ export default function AdminPage() {
 
       {/* ================= MODAL 4: HAPUS KAMPANYE ================= */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="max-w-md p-6 rounded-3xl border-destructive/20 shadow-2xl bg-white dark:bg-card">
+        <DialogContent className="max-w-md p-6 rounded-lg border border-slate-200 shadow-lg bg-white">
           <DialogHeader className="text-left space-y-1">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center">
@@ -1398,7 +1397,7 @@ export default function AdminPage() {
 
       {/* ================= MODAL 5: DAFTAR DONATUR ================= */}
       <Dialog open={isDonatursDialogOpen} onOpenChange={setIsDonatursDialogOpen}>
-        <DialogContent className="max-w-2xl p-6 rounded-3xl border-emerald-200 shadow-2xl bg-white dark:bg-card">
+        <DialogContent className="max-w-2xl p-6 rounded-lg border border-slate-200 shadow-lg bg-white">
           <DialogHeader className="text-left space-y-1">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
@@ -1475,7 +1474,7 @@ export default function AdminPage() {
 
       {/* ================= MODAL 6: DAFTAR PENCAIRAN (DISBURSEMENTS) ================= */}
       <Dialog open={isDisbursementsDialogOpen} onOpenChange={setIsDisbursementsDialogOpen}>
-        <DialogContent className="max-w-2xl p-6 rounded-3xl border-teal-200 shadow-2xl bg-white dark:bg-card">
+        <DialogContent className="max-w-2xl p-6 rounded-lg border border-slate-200 shadow-lg bg-white">
           <DialogHeader className="text-left space-y-1">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center">
@@ -1552,7 +1551,7 @@ export default function AdminPage() {
 
       {/* ================= MODAL 7: UBAH ROLE USER ================= */}
       <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
-        <DialogContent className="max-w-md p-6 rounded-3xl border-emerald-200/90 shadow-2xl bg-white dark:bg-card">
+        <DialogContent className="max-w-md p-6 rounded-lg border border-slate-200 shadow-lg bg-white">
           <DialogHeader className="text-left space-y-1">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">

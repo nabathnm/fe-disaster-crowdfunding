@@ -24,22 +24,22 @@ export default function TransparencyAuditPage() {
   }, [])
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 py-8 max-w-6xl space-y-8">
+    <div className="container mx-auto px-4 sm:px-6 py-8 max-w-6xl space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pb-2 border-b border-emerald-100">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pb-4 border-b border-slate-200">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-200 text-xs font-bold">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 text-xs font-semibold rounded-md">
               Buku Kas Terbuka
             </Badge>
-            <Badge variant="outline" className="text-xs text-muted-foreground border-emerald-100">
+            <Badge variant="outline" className="text-xs text-slate-500 border-slate-200 rounded-md">
               Akses Publik (Bebas Login)
             </Badge>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
             Transparency Audit View
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 max-w-3xl">
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5 max-w-3xl">
             Audit terbuka seluruh catatan donasi bencana yang tercatat secara permanen di blockchain Ethereum Sepolia.
             Masyarakat dapat memverifikasi setiap rupiah secara independen.
           </p>
@@ -51,12 +51,12 @@ export default function TransparencyAuditPage() {
             size="sm"
             onClick={loadLogs}
             disabled={isRefreshing}
-            className="gap-1.5 text-xs font-semibold rounded-xl border-emerald-200"
+            className="gap-1.5 text-xs font-semibold rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50"
           >
-            <RefreshCw className={`h-3.5 w-3.5 text-emerald-600 ${isRefreshing ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-3.5 w-3.5 text-slate-600 ${isRefreshing ? "animate-spin" : ""}`} />
             Refresh Data
           </Button>
-          <Button size="sm" asChild className="text-xs gap-1.5 font-bold shadow-sm shadow-emerald-600/20 rounded-xl">
+          <Button size="sm" asChild className="text-xs gap-1.5 font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-none">
             <a
               href={SEPOLIA_CONFIG.explorerUrl}
               target="_blank"
@@ -69,29 +69,29 @@ export default function TransparencyAuditPage() {
       </div>
 
       {/* Blockchain Integration Spec Banner */}
-      <Card className="rounded-3xl border-emerald-200/80 bg-gradient-to-r from-emerald-50/70 via-white to-emerald-50/40 dark:from-emerald-950/30 dark:via-card dark:to-emerald-950/20 shadow-sm shadow-emerald-500/5">
+      <Card className="rounded-lg border border-slate-200 bg-slate-50/60 shadow-none">
         <CardContent className="p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
           <div className="flex items-start gap-3.5">
-            <div className="p-2.5 rounded-2xl bg-emerald-100 text-emerald-700 shrink-0 shadow-xs">
-              <ShieldCheck className="h-6 w-6" />
+            <div className="h-10 w-10 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
+              <ShieldCheck className="h-5 w-5" />
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-extrabold text-emerald-950 dark:text-emerald-100">
+                <h2 className="text-sm font-bold text-slate-900">
                   Protokol Audit On-Chain Ethereum Sepolia
                 </h2>
-                <Badge className="bg-emerald-600 text-white text-[10px] py-0 px-1.5">Live Testnet</Badge>
+                <Badge className="bg-emerald-600 text-white text-[10px] py-0 px-1.5 rounded-md">Live Testnet</Badge>
               </div>
-              <p className="text-xs text-emerald-900/70 dark:text-emerald-200/70 leading-relaxed max-w-2xl">
+              <p className="text-xs text-slate-600 leading-relaxed max-w-2xl">
                 Setiap donasi yang masuk melalui gateway Midtrans menerbitkan voucher bukti hash transaksi yang
                 di-commit ke <strong>Ethereum Sepolia (Chain ID 11155111)</strong>. Bukti ini bebas diinspeksi publik melalui
-                format URL: <code className="rounded-md bg-white dark:bg-card border border-emerald-200 px-1.5 py-0.5 font-mono text-[11px] text-emerald-800 dark:text-emerald-300">https://sepolia.etherscan.io/tx/&#123;tx_hash&#125;</code>.
+                format URL: <code className="rounded bg-white border border-slate-200 px-1.5 py-0.5 font-mono text-[11px] text-slate-800">https://sepolia.etherscan.io/tx/&#123;tx_hash&#125;</code>.
               </p>
             </div>
           </div>
           <div className="flex sm:flex-col items-center sm:items-end gap-1.5 shrink-0 text-xs">
-            <span className="text-muted-foreground text-[11px]">Akses Halaman:</span>
-            <Badge variant="outline" className="bg-white dark:bg-card text-emerald-700 border-emerald-300 font-bold px-2.5 py-1 rounded-lg">
+            <span className="text-slate-500 text-[11px]">Akses Halaman:</span>
+            <Badge variant="outline" className="bg-white text-slate-800 border-slate-200 font-semibold px-2.5 py-1 rounded-md">
               100% Terbuka untuk Umum
             </Badge>
           </div>
@@ -102,10 +102,10 @@ export default function TransparencyAuditPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-extrabold text-foreground flex items-center gap-2">
+            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-emerald-600" /> Log Transaksi Real-Time
             </h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-slate-500">
               Daftar transaksi donasi terbaru yang telah tercatat dan divalidasi ke blok Sepolia.
             </p>
           </div>
