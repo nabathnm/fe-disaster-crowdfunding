@@ -68,7 +68,7 @@ export default function Navbar() {
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
               <span className="text-base font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
-                PeduliChain
+                Becak
               </span>
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
             </div>

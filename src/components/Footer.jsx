@@ -15,7 +15,7 @@ export default function Footer() {
             </div>
             <div className="flex flex-col text-left">
               <span className="font-extrabold text-sm tracking-tight text-slate-900 dark:text-slate-100">
-                PeduliChain
+                Becak
               </span>
               <span className="text-[11px] text-slate-500">
                 Crowdfunding Kemanusiaan On-Chain
@@ -59,7 +59,7 @@ export default function Footer() {
 
         {/* Minimal Copyright */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left text-[11px] text-slate-400">
-          <p>© 2026 PeduliChain. Platform donasi tanggap darurat terdesentralisasi.</p>
+          <p>© 2026 Becak. Platform donasi tanggap darurat terdesentralisasi.</p>
           <div className="flex items-center gap-4">
             <Link href="/audit" className="hover:text-slate-600 transition-colors">
               Transparansi Blockchain

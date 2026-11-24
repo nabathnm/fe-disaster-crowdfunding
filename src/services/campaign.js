@@ -26,7 +26,7 @@ export async function getCampaignsApi(status) {
 export async function createCampaignApi({ title, description, image_url, target_amount }, token) {
   try {
     const headers = { "Content-Type": "application/json", Accept: "application/json" }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) headers.Authorization = `Bearer ${activeToken}`
 
     const response = await axios.post(
@@ -53,7 +53,7 @@ export async function createCampaignApi({ title, description, image_url, target_
 export async function getMyCampaignsApi(token) {
   try {
     const headers = { Accept: "application/json" }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) headers.Authorization = `Bearer ${activeToken}`
 
     const response = await axios.get("/api/v1/campaigns/me", {
@@ -74,7 +74,7 @@ export async function getMyCampaignsApi(token) {
 export async function getAllCampaignsApi(status, token) {
   try {
     const headers = { Accept: "application/json" }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) headers.Authorization = `Bearer ${activeToken}`
 
     const params = status && status !== "ALL" ? { status } : {}
@@ -113,7 +113,7 @@ export async function getCampaignByIdApi(id) {
 export async function updateCampaignApi(id, data, token) {
   try {
     const headers = { "Content-Type": "application/json", Accept: "application/json" }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) headers.Authorization = `Bearer ${activeToken}`
 
     const response = await axios.patch(`/api/v1/campaigns/${id}`, data, {
@@ -134,7 +134,7 @@ export async function updateCampaignApi(id, data, token) {
 export async function deleteCampaignApi(id, token) {
   try {
     const headers = { Accept: "application/json" }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) headers.Authorization = `Bearer ${activeToken}`
 
     const response = await axios.delete(`/api/v1/campaigns/${id}`, {
@@ -187,7 +187,7 @@ export async function getCampaignDisbursementsApi(id) {
 export async function closeCampaignApi(id, token) {
   try {
     const headers = { Accept: "application/json" }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) headers.Authorization = `Bearer ${activeToken}`
 
     const response = await axios.patch(`/api/v1/campaigns/${id}/close`, {}, {
@@ -208,7 +208,7 @@ export async function closeCampaignApi(id, token) {
 export async function approveCampaignApi(id, token) {
   try {
     const headers = { Accept: "application/json" }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) headers.Authorization = `Bearer ${activeToken}`
 
     const response = await axios.patch(`/api/v1/campaigns/${id}/approve`, {}, {
@@ -230,7 +230,7 @@ export async function approveCampaignApi(id, token) {
 export async function rejectCampaignApi(id, reason, token) {
   try {
     const headers = { "Content-Type": "application/json", Accept: "application/json" }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) headers.Authorization = `Bearer ${activeToken}`
 
     const response = await axios.patch(
@@ -253,7 +253,7 @@ export async function rejectCampaignApi(id, reason, token) {
 export async function getDonationLimitApi(id, token) {
   try {
     const headers = { Accept: "application/json" }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) headers.Authorization = `Bearer ${activeToken}`
 
     const response = await axios.get(`/api/v1/campaigns/${id}/donation-limit`, {
@@ -281,7 +281,7 @@ export async function getDonationLimitApi(id, token) {
 export async function createDonationApi(id, { amount }, token) {
   try {
     const headers = { "Content-Type": "application/json", Accept: "application/json" }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) headers.Authorization = `Bearer ${activeToken}`
 
     const response = await axios.post(

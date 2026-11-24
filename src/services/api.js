@@ -13,7 +13,7 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("pedulichain_token")
+      const token = localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")
       if (token) {
         config.headers.Authorization = `Bearer ${token}`
       }

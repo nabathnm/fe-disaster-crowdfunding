@@ -130,7 +130,7 @@ export default function RegisterPage() {
                 Selamat Datang, {registeredData.name}!
               </CardTitle>
               <CardDescription className="text-xs text-slate-500">
-                Akun donatur Anda telah terdaftar aktif di PeduliChain.
+                Akun donatur Anda telah terdaftar aktif di Becak.
               </CardDescription>
             </CardHeader>
 
@@ -204,7 +204,7 @@ export default function RegisterPage() {
                 <Heart className="h-5 w-5" />
               </div>
               <CardTitle className="text-xl font-bold tracking-tight text-slate-900">
-                Daftar Akun PeduliChain
+                Daftar Akun Becak
               </CardTitle>
               <CardDescription className="text-xs text-slate-500 max-w-xs mx-auto">
                 Bergabunglah sebagai donatur tanggap bencana dengan transparansi penuh berbasis blockchain.

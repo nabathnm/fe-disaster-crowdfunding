@@ -565,7 +565,7 @@ export default function InitiatorDashboardPage() {
               </div>
             </div>
             <p className="text-[11px] leading-relaxed text-slate-500">
-              Untuk mengajukan diri sebagai Inisiator Kampanye, hubungi Administrator sistem PeduliChain untuk verifikasi identitas dan peningkatan peran akun Anda.
+              Untuk mengajukan diri sebagai Inisiator Kampanye, hubungi Administrator sistem Becak untuk verifikasi identitas dan peningkatan peran akun Anda.
             </p>
           </CardContent>
           <CardContent className="pt-0 pb-8 px-6 flex flex-col gap-2">

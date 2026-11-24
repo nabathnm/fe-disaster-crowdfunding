@@ -9,7 +9,7 @@ export default function App({ Component, pageProps }) {
   return (
     <AuthProvider>
       <Head>
-        <title>PeduliChain - Disaster Crowdfunding Blockchain</title>
+        <title>Becak - Disaster Crowdfunding Blockchain</title>
         <meta
           name="description"
           content="Platform crowdfunding tanggap bencana dengan transparansi pencatatan donasi publik pada Ethereum Sepolia Testnet dan integrasi pembayaran Midtrans."

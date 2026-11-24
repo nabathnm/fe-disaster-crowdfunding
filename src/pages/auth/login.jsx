@@ -76,7 +76,7 @@ export default function LoginPage() {
               <Heart className="h-5 w-5" />
             </div>
             <CardTitle className="text-xl font-bold tracking-tight text-slate-900">
-              Masuk ke PeduliChain
+              Masuk ke Becak
             </CardTitle>
             <CardDescription className="text-xs text-slate-500 max-w-xs mx-auto">
               Akses dashboard donatur Anda dan pantau seluruh transaksi on-chain.

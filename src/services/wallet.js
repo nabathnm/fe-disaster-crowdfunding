@@ -11,7 +11,7 @@ export async function getWalletApi(token) {
     const headers = {
       Accept: "application/json",
     }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) {
       headers.Authorization = `Bearer ${activeToken}`
     }
@@ -47,7 +47,7 @@ export async function createTopupApi({ amount }, token) {
       "Content-Type": "application/json",
       Accept: "application/json",
     }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) {
       headers.Authorization = `Bearer ${activeToken}`
     }

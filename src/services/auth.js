@@ -16,7 +16,7 @@ export const authClient = axios.create({
 authClient.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("pedulichain_token")
+      const token = localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")
       if (token) {
         config.headers.Authorization = `Bearer ${token}`
       }
@@ -116,7 +116,7 @@ export async function getUsersApi(token) {
     const headers = {
       Accept: "*/*",
     }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) {
       headers.Authorization = `Bearer ${activeToken}`
     }
@@ -149,7 +149,7 @@ export async function updateUserRoleApi(userId, role, token) {
       "Content-Type": "application/json",
       Accept: "*/*",
     }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) {
       headers.Authorization = `Bearer ${activeToken}`
     }

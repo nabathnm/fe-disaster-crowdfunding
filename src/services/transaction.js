@@ -9,7 +9,7 @@ import axios from "axios"
 export async function getMyTransactionsApi(type, token) {
   try {
     const headers = { Accept: "application/json" }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) headers.Authorization = `Bearer ${activeToken}`
 
     const params = type && type !== "ALL" ? { type } : {}
@@ -38,7 +38,7 @@ export async function getMyTransactionsApi(type, token) {
 export async function getTransactionByIdApi(id, token) {
   try {
     const headers = { Accept: "application/json" }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) headers.Authorization = `Bearer ${activeToken}`
 
     const response = await axios.get(`/api/v1/transactions/${id}`, {

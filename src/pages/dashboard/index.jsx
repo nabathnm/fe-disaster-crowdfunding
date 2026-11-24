@@ -18,6 +18,8 @@ import {
   PlusCircle,
   RefreshCw,
   ArrowUpRight,
+  Lock,
+  Loader2,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import {
@@ -38,7 +40,7 @@ import { getMyTransactionsApi } from "@/services/transaction"
 import TopupModal from "@/components/TopupModal"
 
 export default function DonorDashboardPage() {
-  const { user, token, isAuthenticated } = useAuth()
+  const { user, token, isAuthenticated, isLoading: isAuthLoading } = useAuth()
   const [copiedWallet, setCopiedWallet] = useState(false)
   const [isTopupModalOpen, setIsTopupModalOpen] = useState(false)
   const [isLoadingWallet, setIsLoadingWallet] = useState(false)
@@ -53,6 +55,7 @@ export default function DonorDashboardPage() {
 
   // Load live wallet information from GET /api/v1/wallet
   const loadWallet = async () => {
+    if (!token) return
     setIsLoadingWallet(true)
     try {
       const res = await getWalletApi(token)
@@ -66,18 +69,13 @@ export default function DonorDashboardPage() {
     }
   }
 
-  useEffect(() => {
-    if (isAuthenticated || token) {
-      loadWallet()
-    }
-  }, [isAuthenticated, token])
-
   const [userTransactions, setUserTransactions] = useState([])
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false)
   const [transactionFilter, setTransactionFilter] = useState("ALL")
 
   // Load transactions via GET /api/v1/transactions/me
   const loadTransactions = async () => {
+    if (!token) return
     setIsLoadingTransactions(true)
     try {
       const res = await getMyTransactionsApi(transactionFilter, token)
@@ -95,50 +93,18 @@ export default function DonorDashboardPage() {
   }
 
   useEffect(() => {
-    if (isAuthenticated || token) {
+    if (isAuthenticated && token) {
       loadWallet()
       loadTransactions()
     }
   }, [isAuthenticated, token, transactionFilter])
 
-  const handleTopupSuccess = (topupData) => {
-    // Refresh balance and transactions after top-up transaction initiated
+  const handleTopupSuccess = () => {
     loadWallet()
     loadTransactions()
   }
 
-  // Fallback demo donations jika backend belum memiliki data transaksi untuk akun baru
-  const fallbackDonations = [
-    {
-      id: "INV-20261117-001",
-      order_id: "DONASI-cmp-001-001",
-      type: "DONATION",
-      campaign_id: "cmp-001",
-      amount: 500000,
-      amount_eth: "0.05",
-      created_at: "2026-11-17T09:45:00Z",
-      payment_type: "GoPay / QRIS",
-      status: "SETTLEMENT",
-      tx_hash: "0x789a456bc12de34fa567890123456789abcdef0123456789abcdef0123456789",
-      tx_url: "https://sepolia.etherscan.io/tx/0x789a456bc12de34fa567890123456789abcdef0123456789abcdef0123456789",
-    },
-    {
-      id: "INV-20261115-004",
-      order_id: "DONASI-cmp-002-004",
-      type: "DONATION",
-      campaign_id: "cmp-002",
-      amount: 250000,
-      amount_eth: "0.025",
-      created_at: "2026-11-15T14:20:00Z",
-      payment_type: "BCA Virtual Account",
-      status: "SETTLEMENT",
-      tx_hash: "0x987f654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba",
-      tx_url: "https://sepolia.etherscan.io/tx/0x987f654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba",
-    },
-  ]
-
-  const displayTransactions = userTransactions.length > 0 ? userTransactions : fallbackDonations
-  const donationTransactions = displayTransactions.filter((t) => t.type === "DONATION")
+  const donationTransactions = userTransactions.filter((t) => t.type === "DONATION")
   const totalDonations = donationTransactions.reduce((sum, item) => sum + Number(item.amount || 0), 0)
 
   const handleCopyWallet = (address) => {
@@ -149,8 +115,46 @@ export default function DonorDashboardPage() {
     }
   }
 
-  const activeWalletAddress =
-    walletData.wallet_address || user?.wallet_address || "0x20100998db146E02FC6A24778B82132C7044bdB4"
+  // 1. Loading State
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+        <p className="text-xs text-slate-500 font-medium">Memuat data dashboard akun Anda...</p>
+      </div>
+    )
+  }
+
+  // 2. Authentication Restriction Gate
+  if (!isAuthenticated || !token) {
+    return (
+      <div className="container mx-auto px-4 py-16 max-w-lg">
+        <Card className="rounded-lg border border-slate-200 bg-white text-center overflow-hidden shadow-none">
+          <CardHeader className="pt-8 pb-4">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-slate-700 mb-3">
+              <Lock className="h-6 w-6 text-slate-600" />
+            </div>
+            <CardTitle className="text-xl font-bold text-slate-900">
+              Akses Dibatasi: Silakan Masuk
+            </CardTitle>
+            <CardDescription className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+              Dashboard akun, saldo dompet, dan riwayat transaksi hanya dapat diakses setelah Anda masuk ke sistem.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2 pb-8 px-6 flex flex-col gap-2">
+            <Button asChild className="w-full font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-none">
+              <Link href="/auth/login">Masuk ke Akun Anda</Link>
+            </Button>
+            <Button variant="outline" asChild className="w-full text-xs font-semibold rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50">
+              <Link href="/auth/register">Belum Memiliki Akun? Daftar</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  const activeWalletAddress = walletData.wallet_address || user?.wallet_address || ""
 
   return (
     <div className="container mx-auto px-4 sm:px-6 py-8 max-w-6xl space-y-6">
@@ -190,35 +194,35 @@ export default function DonorDashboardPage() {
         </div>
       </div>
 
-      {/* User On-Chain Identity Card / Auth Callout */}
-      {isAuthenticated && user ? (
-        <Card className="rounded-lg border border-slate-200 bg-white p-5 sm:p-6 shadow-none">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="h-11 w-11 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-base">
-                {user.name ? user.name.charAt(0).toUpperCase() : "U"}
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-base font-bold text-slate-900">
-                    {user.name}
-                  </h2>
-                  <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 text-[10px] font-medium rounded-md">
-                    {user.role || "DONOR"}
-                  </Badge>
-                </div>
-                <p className="text-xs text-slate-500">{user.email}</p>
-              </div>
+      {/* User On-Chain Identity Card */}
+      <Card className="rounded-lg border border-slate-200 bg-white p-5 sm:p-6 shadow-none">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="h-11 w-11 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-base">
+              {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
             </div>
-
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 rounded-lg bg-slate-50 p-2.5 border border-slate-200 w-full md:w-auto">
-              <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                <Wallet className="h-4 w-4 text-emerald-600" />
-                <span className="font-semibold text-slate-900">Ethereum Wallet:</span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-slate-900">
+                  {user?.name}
+                </h2>
+                <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 text-[10px] font-medium rounded-md">
+                  {user?.role || "DONOR"}
+                </Badge>
               </div>
-              <span className="font-mono text-xs font-semibold text-slate-800">
-                {formatAddress(activeWalletAddress)}
-              </span>
+              <p className="text-xs text-slate-500">{user?.email}</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 rounded-lg bg-slate-50 p-2.5 border border-slate-200 w-full md:w-auto">
+            <div className="flex items-center gap-1.5 text-xs text-slate-600">
+              <Wallet className="h-4 w-4 text-emerald-600" />
+              <span className="font-semibold text-slate-900">Dompet Ethereum:</span>
+            </div>
+            <span className="font-mono text-xs font-semibold text-slate-800">
+              {activeWalletAddress ? formatAddress(activeWalletAddress) : "Sedang disinkronisasi..."}
+            </span>
+            {activeWalletAddress && (
               <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
@@ -241,38 +245,10 @@ export default function DonorDashboardPage() {
                   </a>
                 </Button>
               </div>
-            </div>
+            )}
           </div>
-        </Card>
-      ) : (
-        <Card className="rounded-lg border border-slate-200 bg-slate-50/60 p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-none">
-          <div className="flex items-center gap-3.5">
-            <div className="h-10 w-10 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center shrink-0">
-              <User className="h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-900">
-                Daftar Akun untuk Mendapatkan Dompet Ethereum Pribadi
-              </h3>
-              <p className="text-xs text-slate-600 mt-0.5 max-w-xl">
-                Setiap akun yang didaftarkan ke API backend otomatis memiliki dompet on-chain terverifikasi untuk mencatat riwayat donasi Anda secara transparan.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Button variant="outline" size="sm" asChild className="rounded-lg border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100">
-              <Link href="/auth/login" className="gap-1">
-                <LogIn className="h-3.5 w-3.5" /> Masuk
-              </Link>
-            </Button>
-            <Button size="sm" asChild className="rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-none">
-              <Link href="/auth/register" className="gap-1">
-                <UserPlus className="h-3.5 w-3.5" /> Daftar Akun
-              </Link>
-            </Button>
-          </div>
-        </Card>
-      )}
+        </div>
+      </Card>
 
       {/* Metric Cards Section (Clean White Minimalist) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -421,14 +397,14 @@ export default function DonorDashboardPage() {
                     Memuat data transaksi dari blockchain...
                   </TableCell>
                 </TableRow>
-              ) : displayTransactions.length === 0 ? (
+              ) : userTransactions.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center text-slate-400 text-xs">
-                    Belum ada riwayat transaksi. Lakukan donasi atau top up saldo untuk memulai.
+                    Belum ada riwayat transaksi pada akun ini. Lakukan donasi atau top up saldo untuk memulai.
                   </TableCell>
                 </TableRow>
               ) : (
-                displayTransactions.map((item) => (
+                userTransactions.map((item) => (
                   <TableRow key={item.id || item.order_id} className="hover:bg-slate-50/50 border-b border-slate-100 transition-colors">
                     {/* Resi ID */}
                     <TableCell className="font-mono text-xs font-medium">

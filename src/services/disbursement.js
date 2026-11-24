@@ -8,7 +8,7 @@ import axios from "axios"
 export async function getMyDisbursementsApi(token) {
   try {
     const headers = { Accept: "application/json" }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) headers.Authorization = `Bearer ${activeToken}`
 
     const response = await axios.get("/api/v1/disbursements/me", {
@@ -35,7 +35,7 @@ export async function getMyDisbursementsApi(token) {
 export async function getDisbursementLimitApi(campaignId, token) {
   try {
     const headers = { Accept: "application/json" }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) headers.Authorization = `Bearer ${activeToken}`
 
     const response = await axios.get("/api/v1/disbursements/limit", {
@@ -64,7 +64,7 @@ export async function getDisbursementLimitApi(campaignId, token) {
 export async function getAllDisbursementsApi(status, token) {
   try {
     const headers = { Accept: "application/json" }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) headers.Authorization = `Bearer ${activeToken}`
 
     const params = status && status !== "ALL" ? { status } : {}
@@ -94,7 +94,7 @@ export async function getAllDisbursementsApi(status, token) {
 export async function createDisbursementApi({ campaign_id, amount, proof_url, description }, token) {
   try {
     const headers = { "Content-Type": "application/json", Accept: "application/json" }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) headers.Authorization = `Bearer ${activeToken}`
 
     const response = await axios.post(
@@ -127,7 +127,7 @@ export async function createDisbursementApi({ campaign_id, amount, proof_url, de
 export async function approveDisbursementApi(id, token) {
   try {
     const headers = { Accept: "application/json" }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) headers.Authorization = `Bearer ${activeToken}`
 
     const response = await axios.patch(`/api/v1/disbursements/${id}/approve`, {}, { headers, timeout: 30000 })
@@ -152,7 +152,7 @@ export async function approveDisbursementApi(id, token) {
 export async function rejectDisbursementApi(id, reason, token) {
   try {
     const headers = { "Content-Type": "application/json", Accept: "application/json" }
-    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    const activeToken = token || (typeof window !== "undefined" ? (localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")) : null)
     if (activeToken) headers.Authorization = `Bearer ${activeToken}`
 
     const response = await axios.patch(

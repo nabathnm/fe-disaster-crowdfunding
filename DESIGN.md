@@ -1,13 +1,13 @@
-# DESIGN.md — PeduliChain Design Direction
+# DESIGN.md — Becak Design Direction
 
-> Single source of truth for PeduliChain's brand identity, color system, typography, and craftsmanship.
+> Single source of truth for Becak's brand identity, color system, typography, and craftsmanship.
 > Read by agents for visual direction, then filtered through `.agents/skills/antislop/SKILL.md`.
 
 ---
 
 ## 1. Brand Identity & Personality
 
-- **Product Name**: PeduliChain
+- **Product Name**: Becak
 - **Core Mission**: Platform penggalangan dana kemanusiaan dan tanggap darurat bencana transparan berbasis smart contract Ethereum Sepolia dan pembayaran mudah Midtrans.
 - **Personality**: Empatik, Amanah, Tanggap Cepat, Transparan, dan Modern.
 - **Feeling**: Hangat, peduli, bersih, dan menenangkan (bukan tech-bro dingin atau korporat kaku).
@@ -16,7 +16,7 @@
 
 ## 2. Color Palette (Caring Green Theme)
 
-PeduliChain menggunakan palet hijau zamrud (*caring emerald*) yang melambangkan kehidupan, pemulihan pasca-bencana, dan kepedulian yang tulus.
+Becak menggunakan palet hijau zamrud (*caring emerald*) yang melambangkan kehidupan, pemulihan pasca-bencana, dan kepedulian yang tulus.
 
 ### Core Colors (2-3 Colors Max per R-29)
 

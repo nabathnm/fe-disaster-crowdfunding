@@ -12,17 +12,19 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const initSession = async () => {
       try {
-        const savedToken = localStorage.getItem("pedulichain_token")
+        const savedToken = localStorage.getItem("becak_token") || localStorage.getItem("pedulichain_token")
         if (savedToken) {
           setToken(savedToken)
           // Verifikasi token ke endpoint GET /api/v1/auth/session dengan Bearer
           const sessionRes = await getSessionApi(savedToken)
           if (sessionRes.success && sessionRes.data) {
             setUser(sessionRes.data)
-            localStorage.setItem("pedulichain_user", JSON.stringify(sessionRes.data))
+            localStorage.setItem("becak_user", JSON.stringify(sessionRes.data))
           } else {
             // Token expired atau tidak valid
             console.warn("Session token expired / invalid:", sessionRes.message)
+            localStorage.removeItem("becak_token")
+            localStorage.removeItem("becak_user")
             localStorage.removeItem("pedulichain_token")
             localStorage.removeItem("pedulichain_user")
             setUser(null)
@@ -49,7 +51,7 @@ export function AuthProvider({ children }) {
       const registeredUser = res.data
       setUser(registeredUser)
       try {
-        localStorage.setItem("pedulichain_user", JSON.stringify(registeredUser))
+        localStorage.setItem("becak_user", JSON.stringify(registeredUser))
       } catch (err) {
         console.error("Gagal menyimpan user:", err)
       }
@@ -60,13 +62,13 @@ export function AuthProvider({ children }) {
         if (loginRes.success && loginRes.data?.access_token) {
           const accessToken = loginRes.data.access_token
           setToken(accessToken)
-          localStorage.setItem("pedulichain_token", accessToken)
+          localStorage.setItem("becak_token", accessToken)
 
           // Ambil full session dengan Bearer token
           const sessionRes = await getSessionApi(accessToken)
           if (sessionRes.success && sessionRes.data) {
             setUser(sessionRes.data)
-            localStorage.setItem("pedulichain_user", JSON.stringify(sessionRes.data))
+            localStorage.setItem("becak_user", JSON.stringify(sessionRes.data))
           }
         }
       } catch (loginErr) {
@@ -92,7 +94,7 @@ export function AuthProvider({ children }) {
     if (res.success && res.data?.access_token) {
       const accessToken = res.data.access_token
       setToken(accessToken)
-      localStorage.setItem("pedulichain_token", accessToken)
+      localStorage.setItem("becak_token", accessToken)
 
       // Ambil data user lengkap dari endpoint GET /api/v1/auth/session
       const sessionRes = await getSessionApi(accessToken)
@@ -100,7 +102,7 @@ export function AuthProvider({ children }) {
       if (sessionRes.success && sessionRes.data) {
         loggedInUser = sessionRes.data
         setUser(sessionRes.data)
-        localStorage.setItem("pedulichain_user", JSON.stringify(sessionRes.data))
+        localStorage.setItem("becak_user", JSON.stringify(sessionRes.data))
       } else {
         // Fallback jika session endpoint temporary offline
         loggedInUser = {
@@ -110,7 +112,7 @@ export function AuthProvider({ children }) {
           wallet_address: "0x" + Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join(""),
         }
         setUser(loggedInUser)
-        localStorage.setItem("pedulichain_user", JSON.stringify(loggedInUser))
+        localStorage.setItem("becak_user", JSON.stringify(loggedInUser))
       }
 
       return { success: true, data: res.data, user: loggedInUser, message: res.message }
@@ -131,7 +133,7 @@ export function AuthProvider({ children }) {
     const res = await getSessionApi(token)
     if (res.success && res.data) {
       setUser(res.data)
-      localStorage.setItem("pedulichain_user", JSON.stringify(res.data))
+      localStorage.setItem("becak_user", JSON.stringify(res.data))
       return res.data
     }
     return null
@@ -151,6 +153,8 @@ export function AuthProvider({ children }) {
     setUser(null)
     setToken(null)
     try {
+      localStorage.removeItem("becak_user")
+      localStorage.removeItem("becak_token")
       localStorage.removeItem("pedulichain_user")
       localStorage.removeItem("pedulichain_token")
     } catch (e) {
