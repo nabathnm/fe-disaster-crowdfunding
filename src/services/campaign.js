@@ -244,3 +244,59 @@ export async function rejectCampaignApi(id, reason, token) {
     return { success: false, message: error.message, errors: null, data: null }
   }
 }
+
+/**
+ * 13. GET /campaigns/{id}/donation-limit
+ * Cek batas donasi user pada kampanye berdasarkan saldo wallet & sisa target (JWT Required)
+ * Returns: ApiResponse_DonationLimitResponse_
+ */
+export async function getDonationLimitApi(id, token) {
+  try {
+    const headers = { Accept: "application/json" }
+    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    if (activeToken) headers.Authorization = `Bearer ${activeToken}`
+
+    const response = await axios.get(`/api/v1/campaigns/${id}/donation-limit`, {
+      headers,
+      timeout: 15000,
+    })
+    return response.data
+  } catch (error) {
+    if (error.response?.data) return error.response.data
+    return {
+      success: false,
+      message: error.message || "Gagal mengambil batas donasi",
+      errors: null,
+      data: null,
+    }
+  }
+}
+
+/**
+ * 14. POST /campaigns/{id}/donations
+ * Melakukan donasi langsung on-chain menggunakan saldo wallet user (JWT Required)
+ * Payload: { amount: string (ETH format, e.g. "0.01") }
+ * Returns: ApiResponse_TransactionResponse_
+ */
+export async function createDonationApi(id, { amount }, token) {
+  try {
+    const headers = { "Content-Type": "application/json", Accept: "application/json" }
+    const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("pedulichain_token") : null)
+    if (activeToken) headers.Authorization = `Bearer ${activeToken}`
+
+    const response = await axios.post(
+      `/api/v1/campaigns/${id}/donations`,
+      { amount: String(amount) },
+      { headers, timeout: 30000 }
+    )
+    return response.data
+  } catch (error) {
+    if (error.response?.data) return error.response.data
+    return {
+      success: false,
+      message: error.message || "Gagal memproses donasi",
+      errors: null,
+      data: null,
+    }
+  }
+}

@@ -57,6 +57,11 @@ import {
   getCampaignDonatursApi,
   getCampaignDisbursementsApi,
 } from "@/services/campaign"
+import {
+  getMyDisbursementsApi,
+  getDisbursementLimitApi,
+  createDisbursementApi,
+} from "@/services/disbursement"
 import TopupModal from "@/components/TopupModal"
 
 export default function InitiatorDashboardPage() {
@@ -78,6 +83,24 @@ export default function InitiatorDashboardPage() {
   // Campaigns State (via GET /api/v1/campaigns/me)
   const [myCampaigns, setMyCampaigns] = useState([])
   const [isLoadingCampaigns, setIsLoadingCampaigns] = useState(false)
+
+  // Tab State: "campaigns" vs "disbursements"
+  const [activeTab, setActiveTab] = useState("campaigns")
+
+  // My Disbursements State (GET /api/v1/disbursements/me)
+  const [myDisbursements, setMyDisbursements] = useState([])
+  const [isLoadingMyDisbursements, setIsLoadingMyDisbursements] = useState(false)
+
+  // Request Disbursement Modal State (POST /api/v1/disbursements)
+  const [isRequestDisbursementOpen, setIsRequestDisbursementOpen] = useState(false)
+  const [selectedCampaignForDisbursement, setSelectedCampaignForDisbursement] = useState(null)
+  const [disbursementLimit, setDisbursementLimit] = useState(null)
+  const [isLoadingLimit, setIsLoadingLimit] = useState(false)
+  const [requestAmountEth, setRequestAmountEth] = useState("")
+  const [requestProofUrl, setRequestProofUrl] = useState("")
+  const [requestDescription, setRequestDescription] = useState("")
+  const [isSubmittingDisbursement, setIsSubmittingDisbursement] = useState(false)
+  const [requestDisbursementError, setRequestDisbursementError] = useState("")
 
   // Global Notification
   const [successMessage, setSuccessMessage] = useState("")
@@ -154,14 +177,117 @@ export default function InitiatorDashboardPage() {
     }
   }
 
+  // Load disbursements via GET /api/v1/disbursements/me
+  const loadMyDisbursements = async () => {
+    if (!token) return
+    setIsLoadingMyDisbursements(true)
+    try {
+      const res = await getMyDisbursementsApi(token)
+      if (res.success && Array.isArray(res.data)) {
+        setMyDisbursements(res.data)
+      } else {
+        setMyDisbursements([])
+      }
+    } catch (e) {
+      console.warn("Gagal memuat pengajuan pencairan saya:", e)
+      setMyDisbursements([])
+    } finally {
+      setIsLoadingMyDisbursements(false)
+    }
+  }
+
   useEffect(() => {
     if (isAuthenticated) {
       loadWallet()
       if (user?.role === "INITIATOR" || user?.role === "ADMIN") {
         loadMyCampaigns()
+        loadMyDisbursements()
       }
     }
   }, [isAuthenticated, user?.role, token])
+
+  // Open Request Disbursement Modal (fetches GET /api/v1/disbursements/limit)
+  const openRequestDisbursementModal = async (camp) => {
+    setSelectedCampaignForDisbursement(camp)
+    setRequestAmountEth("")
+    setRequestProofUrl("")
+    setRequestDescription("")
+    setRequestDisbursementError("")
+    setIsRequestDisbursementOpen(true)
+    setIsLoadingLimit(true)
+    try {
+      const res = await getDisbursementLimitApi(camp.id, token)
+      if (res.success && res.data) {
+        setDisbursementLimit(res.data)
+      } else {
+        setDisbursementLimit(null)
+      }
+    } catch (e) {
+      console.warn("Gagal mengambil batas pencairan dana:", e)
+      setDisbursementLimit(null)
+    } finally {
+      setIsLoadingLimit(false)
+    }
+  }
+
+  // Submit Request Disbursement (POST /api/v1/disbursements)
+  const handleRequestDisbursementSubmit = async (e) => {
+    e.preventDefault()
+    setRequestDisbursementError("")
+
+    if (!selectedCampaignForDisbursement?.id) return
+
+    if (!requestAmountEth || Number(requestAmountEth) <= 0) {
+      setRequestDisbursementError("Nominal pencairan harus lebih dari 0 ETH")
+      return
+    }
+
+    if (disbursementLimit && Number(requestAmountEth) > Number(disbursementLimit.available_eth || 0)) {
+      setRequestDisbursementError(
+        `Nominal pengajuan (${requestAmountEth} ETH) melebihi batas dana yang tersedia (${disbursementLimit.available_eth} ETH)`
+      )
+      return
+    }
+
+    if (!requestProofUrl.trim()) {
+      setRequestDisbursementError("Tautan dokumen / bukti peruntukan dana bencana (URL) wajib diisi")
+      return
+    }
+
+    if (!requestDescription.trim()) {
+      setRequestDisbursementError("Keterangan peruntukan penyaluran bantuan wajib diisi")
+      return
+    }
+
+    setIsSubmittingDisbursement(true)
+
+    try {
+      const res = await createDisbursementApi(
+        {
+          campaign_id: selectedCampaignForDisbursement.id,
+          amount: requestAmountEth,
+          proof_url: requestProofUrl.trim(),
+          description: requestDescription.trim(),
+        },
+        token
+      )
+
+      if (res.success && res.data) {
+        setSuccessMessage(
+          `Pengajuan pencairan ${requestAmountEth} ETH untuk kampanye "${selectedCampaignForDisbursement.title}" berhasil dikirim! Menunggu persetujuan admin.`
+        )
+        setIsRequestDisbursementOpen(false)
+        loadMyCampaigns()
+        loadMyDisbursements()
+      } else {
+        setRequestDisbursementError(res.message || res.errors || "Gagal mengajukan pencairan dana")
+      }
+    } catch (err) {
+      setRequestDisbursementError(err.message || "Terjadi kesalahan saat memproses pengajuan pencairan dana")
+    } finally {
+      setIsSubmittingDisbursement(false)
+    }
+  }
 
   const handleCopyWallet = (address) => {
     if (address) {
@@ -643,163 +769,362 @@ export default function InitiatorDashboardPage() {
         </Card>
       </div>
 
-      {/* Campaigns List Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">Daftar Kampanye Bencana yang Anda Buat</h3>
-            <p className="text-xs text-slate-500">
-              Dikelola melalui API <code className="font-mono text-[11px] bg-slate-100 px-1 rounded">GET /api/v1/campaigns/me</code>.
-            </p>
-          </div>
-          <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 text-xs font-medium rounded-md">
-            {myCampaigns.length} Kampanye
-          </Badge>
-        </div>
+      {/* Main Tab Navigation Buttons */}
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+        <button
+          type="button"
+          onClick={() => setActiveTab("campaigns")}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg font-semibold text-xs transition-colors ${
+            activeTab === "campaigns"
+              ? "bg-emerald-600 text-white"
+              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+          }`}
+        >
+          <Layers className="h-4 w-4" /> Program Bencana Saya
+          <span className="bg-white/20 text-white px-1.5 py-0.2 rounded-md text-[10px] font-bold">
+            {myCampaigns.length}
+          </span>
+        </button>
 
-        {isLoadingCampaigns ? (
-          <div className="p-12 text-center space-y-3 bg-white rounded-lg border border-slate-200">
-            <Loader2 className="h-8 w-8 animate-spin text-emerald-600 mx-auto" />
-            <p className="text-xs text-slate-500">Memuat daftar kampanye dari server...</p>
-          </div>
-        ) : myCampaigns.length === 0 ? (
-          <Card className="p-10 text-center space-y-3 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 shadow-none">
-            <HeartHandshake className="h-10 w-10 text-slate-400 mx-auto" />
-            <div className="space-y-1">
-              <h4 className="text-sm font-bold text-slate-900">Belum Ada Kampanye yang Dibuat</h4>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                Sebagai inisiator, Anda dapat mempublikasikan program bantuan bencana dan menggalang donasi dari publik.
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab("disbursements")
+            loadMyDisbursements()
+          }}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg font-semibold text-xs transition-colors ${
+            activeTab === "disbursements"
+              ? "bg-emerald-600 text-white"
+              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+          }`}
+        >
+          <DollarSign className="h-4 w-4" /> Riwayat Pengajuan Pencairan Dana
+          <span className="bg-slate-200 text-slate-800 px-1.5 py-0.2 rounded-md text-[10px] font-semibold">
+            {myDisbursements.length}
+          </span>
+        </button>
+      </div>
+
+      {/* ================= TAB 1: DAFTAR KAMPANYE ================= */}
+      {activeTab === "campaigns" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Daftar Kampanye Bencana yang Anda Buat</h3>
+              <p className="text-xs text-slate-500">
+                Dikelola melalui API <code className="font-mono text-[11px] bg-slate-100 px-1 rounded">GET /api/v1/campaigns/me</code>.
               </p>
             </div>
-            <Button
-              size="sm"
-              onClick={() => setIsCreateOpen(true)}
-              className="rounded-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-none"
-            >
-              <PlusCircle className="h-4 w-4" /> Buat Kampanye Pertama Anda
-            </Button>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {myCampaigns.map((camp) => (
-              <Card
-                key={camp.id}
-                className="rounded-lg border border-slate-200 bg-white shadow-none hover:border-emerald-500 transition-colors overflow-hidden flex flex-col"
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                onClick={() => setIsCreateOpen(true)}
+                className="rounded-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-none text-xs"
               >
-                <div className="relative h-44 w-full bg-slate-100 overflow-hidden">
-                  <img
-                    src={camp.image_url || "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=800&q=80"}
-                    alt={camp.title}
-                    className="h-full w-full object-cover"
-                  />
-                  <div className="absolute top-2.5 right-2.5">
-                    {getCampaignStatusBadge(camp.status)}
-                  </div>
-                </div>
+                <PlusCircle className="h-4 w-4" /> Buat Kampanye Baru
+              </Button>
+            </div>
+          </div>
 
-                <CardContent className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                  <div className="space-y-1.5">
-                    <h4 className="text-sm font-bold text-slate-900 line-clamp-1">
-                      {camp.title}
-                    </h4>
-                    <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                      {camp.description}
-                    </p>
-                  </div>
-
-                  {/* Rejection Notice if any */}
-                  {camp.status === "REJECTED" && camp.rejection_reason && (
-                    <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-[11px] text-rose-900 space-y-0.5">
-                      <span className="font-semibold flex items-center gap-1 text-rose-700">
-                        <AlertTriangle className="h-3 w-3" /> Catatan Penolakan Admin:
-                      </span>
-                      <p>{camp.rejection_reason}</p>
+          {isLoadingCampaigns ? (
+            <div className="p-12 text-center space-y-3 bg-white rounded-lg border border-slate-200">
+              <Loader2 className="h-8 w-8 animate-spin text-emerald-600 mx-auto" />
+              <p className="text-xs text-slate-500">Memuat daftar kampanye dari server...</p>
+            </div>
+          ) : myCampaigns.length === 0 ? (
+            <Card className="p-10 text-center space-y-3 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 shadow-none">
+              <HeartHandshake className="h-10 w-10 text-slate-400 mx-auto" />
+              <div className="space-y-1">
+                <h4 className="text-sm font-bold text-slate-900">Belum Ada Kampanye yang Dibuat</h4>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  Sebagai inisiator, Anda dapat mempublikasikan program bantuan bencana dan menggalang donasi dari publik.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => setIsCreateOpen(true)}
+                className="rounded-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-none"
+              >
+                <PlusCircle className="h-4 w-4" /> Buat Kampanye Pertama Anda
+              </Button>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {myCampaigns.map((camp) => (
+                <Card
+                  key={camp.id}
+                  className="rounded-lg border border-slate-200 bg-white shadow-none hover:border-emerald-500 transition-colors overflow-hidden flex flex-col"
+                >
+                  <div className="relative h-44 w-full bg-slate-100 overflow-hidden">
+                    <img
+                      src={camp.image_url || "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=800&q=80"}
+                      alt={camp.title}
+                      className="h-full w-full object-cover"
+                    />
+                    <div className="absolute top-2.5 right-2.5">
+                      {getCampaignStatusBadge(camp.status)}
                     </div>
-                  )}
-
-                  <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-500">Target Donasi:</span>
-                      <span className="font-mono font-bold text-emerald-700">
-                        {camp.target_amount} ETH
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-500">Dibuat Pada:</span>
-                      <span className="text-slate-700">{camp.created_at ? formatDate(camp.created_at) : "-"}</span>
-                    </div>
                   </div>
 
-                  {/* Action Buttons for Initiator */}
-                  <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openDonatursModal(camp)}
-                      className="text-[11px] font-semibold rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 gap-1 h-8"
-                    >
-                      <HeartHandshake className="h-3.5 w-3.5 text-emerald-600" /> Donatur
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openDisbursementsModal(camp)}
-                      className="text-[11px] font-semibold rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 gap-1 h-8"
-                    >
-                      <DollarSign className="h-3.5 w-3.5 text-emerald-600" /> Pencairan
-                    </Button>
-                  </div>
+                  <CardContent className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                    <div className="space-y-1.5">
+                      <h4 className="text-sm font-bold text-slate-900 line-clamp-1">
+                        {camp.title}
+                      </h4>
+                      <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                        {camp.description}
+                      </p>
+                    </div>
 
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openEditModal(camp)}
-                      className="flex-1 text-xs font-semibold rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 gap-1"
-                    >
-                      <Edit className="h-3.5 w-3.5" /> Edit
-                    </Button>
+                    {/* Rejection Notice if any */}
+                    {camp.status === "REJECTED" && camp.rejection_reason && (
+                      <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-[11px] text-rose-900 space-y-0.5">
+                        <span className="font-semibold flex items-center gap-1 text-rose-700">
+                          <AlertTriangle className="h-3 w-3" /> Catatan Penolakan Admin:
+                        </span>
+                        <p>{camp.rejection_reason}</p>
+                      </div>
+                    )}
 
-                    {camp.status !== "CLOSED" && (
+                    <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-slate-500">Target Donasi:</span>
+                        <span className="font-mono font-bold text-emerald-700">
+                          {camp.target_amount} ETH
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-slate-500">Dibuat Pada:</span>
+                        <span className="text-slate-700">{camp.created_at ? formatDate(camp.created_at) : "-"}</span>
+                      </div>
+                    </div>
+
+                    {/* Action Button: Ajukan Pencairan Dana (POST /disbursements) */}
+                    {(camp.status === "APPROVED" || camp.status === "ACTIVE") && (
                       <Button
                         size="sm"
-                        variant="outline"
-                        onClick={() => openCloseModal(camp)}
-                        className="text-xs font-semibold rounded-lg border-slate-200 text-amber-800 hover:bg-amber-50 px-3"
-                        title="Tutup Kampanye"
+                        onClick={() => openRequestDisbursementModal(camp)}
+                        className="w-full text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 h-8.5 shadow-none"
                       >
-                        <Lock className="h-3.5 w-3.5" /> Tutup
+                        <DollarSign className="h-3.5 w-3.5" /> Ajukan Pencairan Dana
                       </Button>
                     )}
 
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => openDeleteModal(camp)}
-                      className="text-slate-400 hover:text-rose-600 p-2 rounded-lg"
-                      title="Hapus Kampanye"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    {/* Action Buttons for Initiator */}
+                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openDonatursModal(camp)}
+                        className="text-[11px] font-semibold rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 gap-1 h-8"
+                      >
+                        <HeartHandshake className="h-3.5 w-3.5 text-emerald-600" /> Donatur
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openDisbursementsModal(camp)}
+                        className="text-[11px] font-semibold rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 gap-1 h-8"
+                      >
+                        <DollarSign className="h-3.5 w-3.5 text-emerald-600" /> Pencairan
+                      </Button>
+                    </div>
 
-                    <Button
-                      size="sm"
-                      asChild
-                      variant="ghost"
-                      className="p-2 text-muted-foreground hover:text-emerald-700"
-                      title="Lihat Halaman Publik"
-                    >
-                      <Link href={`/campaign/${camp.id}`} target="_blank">
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openEditModal(camp)}
+                        className="flex-1 text-xs font-semibold rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 gap-1"
+                      >
+                        <Edit className="h-3.5 w-3.5" /> Edit
+                      </Button>
+
+                      {camp.status !== "CLOSED" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openCloseModal(camp)}
+                          className="text-xs font-semibold rounded-lg border-slate-200 text-amber-800 hover:bg-amber-50 px-3"
+                          title="Tutup Kampanye"
+                        >
+                          <Lock className="h-3.5 w-3.5" /> Tutup
+                        </Button>
+                      )}
+
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => openDeleteModal(camp)}
+                        className="text-slate-400 hover:text-rose-600 p-2 rounded-lg"
+                        title="Hapus Kampanye"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        asChild
+                        variant="ghost"
+                        className="p-2 text-muted-foreground hover:text-emerald-700"
+                        title="Lihat Halaman Publik"
+                      >
+                        <Link href={`/campaign/${camp.id}`} target="_blank">
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ================= TAB 2: RIWAYAT PENGAJUAN PENCAIRAN (GET /disbursements/me) ================= */}
+      {activeTab === "disbursements" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Riwayat Pengajuan Pencairan Dana Anda</h3>
+              <p className="text-xs text-slate-500">
+                Data real-time dari API <code className="font-mono text-[11px] bg-slate-100 px-1 rounded">GET /api/v1/disbursements/me</code>.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadMyDisbursements}
+              disabled={isLoadingMyDisbursements}
+              className="rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold gap-1.5"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 text-slate-600 ${isLoadingMyDisbursements ? "animate-spin" : ""}`} />
+              Segarkan
+            </Button>
           </div>
-        )}
-      </div>
+
+          {isLoadingMyDisbursements ? (
+            <div className="p-12 text-center space-y-3 bg-white rounded-lg border border-slate-200">
+              <Loader2 className="h-8 w-8 animate-spin text-emerald-600 mx-auto" />
+              <p className="text-xs text-slate-500">Memuat catatan pengajuan pencairan dana...</p>
+            </div>
+          ) : myDisbursements.length === 0 ? (
+            <Card className="p-10 text-center space-y-3 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 shadow-none">
+              <DollarSign className="h-10 w-10 text-slate-400 mx-auto" />
+              <div className="space-y-1">
+                <h4 className="text-sm font-bold text-slate-900">Belum Ada Pengajuan Pencairan</h4>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  Anda belum pernah mengajukan pencairan dana bencana. Pilih kampanye aktif di tab "Program Bencana Saya" untuk mengajukan pencairan.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => setActiveTab("campaigns")}
+                className="rounded-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-none"
+              >
+                Buka Tab Kampanye
+              </Button>
+            </Card>
+          ) : (
+            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">
+                    <tr>
+                      <th className="px-4 py-3">Kampanye Bencana</th>
+                      <th className="px-4 py-3">Nominal (ETH)</th>
+                      <th className="px-4 py-3">Keperluan / Keterangan</th>
+                      <th className="px-4 py-3">Bukti / Dokumen</th>
+                      <th className="px-4 py-3">Status Verifikasi</th>
+                      <th className="px-4 py-3">Tx On-Chain</th>
+                      <th className="px-4 py-3">Tanggal</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {myDisbursements.map((dis) => (
+                      <tr key={dis.id} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="px-4 py-3 font-medium text-slate-900 max-w-[200px] truncate">
+                          {dis.campaign?.title || dis.campaign_id || "-"}
+                        </td>
+                        <td className="px-4 py-3 font-mono font-bold text-emerald-700">
+                          {dis.amount} ETH
+                        </td>
+                        <td className="px-4 py-3 text-slate-600 max-w-[220px]">
+                          <p className="line-clamp-2">{dis.description || "-"}</p>
+                          {dis.status === "REJECTED" && dis.rejection_reason && (
+                            <p className="text-[10px] text-rose-700 font-medium mt-1">
+                              Alasan Tolak: {dis.rejection_reason}
+                            </p>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {dis.proof_url ? (
+                            <a
+                              href={dis.proof_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-emerald-700 hover:text-emerald-800 font-semibold inline-flex items-center gap-1 text-[11px]"
+                            >
+                              Lihat Bukti <ExternalLink className="h-3 w-3" />
+                            </a>
+                          ) : (
+                            <span className="text-slate-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {dis.status === "PENDING" && (
+                            <Badge className="bg-amber-100 text-amber-900 border-amber-300 text-[10px] font-bold">
+                              MENUNGGU ADMIN
+                            </Badge>
+                          )}
+                          {dis.status === "APPROVED" && (
+                            <Badge className="bg-blue-100 text-blue-900 border-blue-300 text-[10px] font-bold">
+                              DISETUJUI
+                            </Badge>
+                          )}
+                          {(dis.status === "EXECUTED" || dis.status === "COMPLETED") && (
+                            <Badge className="bg-emerald-100 text-emerald-900 border-emerald-300 text-[10px] font-bold">
+                              DICAIRKAN
+                            </Badge>
+                          )}
+                          {dis.status === "REJECTED" && (
+                            <Badge className="bg-rose-100 text-rose-900 border-rose-300 text-[10px] font-bold">
+                              DITOLAK
+                            </Badge>
+                          )}
+                          {!["PENDING", "APPROVED", "EXECUTED", "COMPLETED", "REJECTED"].includes(dis.status) && (
+                            <Badge variant="outline" className="text-[10px]">
+                              {dis.status}
+                            </Badge>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {dis.tx_hash || dis.tx_url ? (
+                            <a
+                              href={dis.tx_url || `https://sepolia.etherscan.io/tx/${dis.tx_hash}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-mono text-[10px] text-emerald-700 hover:underline inline-flex items-center gap-1"
+                            >
+                              {formatAddress(dis.tx_hash || "0x0000")} <ExternalLink className="h-2.5 w-2.5" />
+                            </a>
+                          ) : (
+                            <span className="text-slate-400 font-mono text-[11px]">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-slate-500 text-[11px] whitespace-nowrap">
+                          {dis.created_at ? formatDate(dis.created_at) : "-"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ================= MODAL 1: BUAT KAMPANYE BARU (POST /campaigns) ================= */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -1257,6 +1582,161 @@ export default function InitiatorDashboardPage() {
               Tutup
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ================= MODAL 7: PENGAJUAN PENCAIRAN DANA (POST /disbursements) ================= */}
+      <Dialog open={isRequestDisbursementOpen} onOpenChange={setIsRequestDisbursementOpen}>
+        <DialogContent className="max-w-lg p-6 rounded-lg border border-slate-200 shadow-lg bg-white">
+          <form onSubmit={handleRequestDisbursementSubmit} className="space-y-4">
+            <DialogHeader className="text-left space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="h-9 w-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                  <DollarSign className="h-5 w-5" />
+                </div>
+                <div>
+                  <DialogTitle className="text-lg font-bold text-slate-900">
+                    Ajukan Pencairan Dana Bencana
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-slate-500">
+                    API: <code className="font-mono text-[11px] bg-slate-100 px-1 rounded">POST /api/v1/disbursements</code>
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+
+            {requestDisbursementError && (
+              <div className="rounded-lg bg-rose-50 border border-rose-200 p-3 text-xs text-rose-900 flex items-start gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-rose-600" />
+                <span>{requestDisbursementError}</span>
+              </div>
+            )}
+
+            {/* Campaign info banner */}
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2 text-xs">
+              <div className="font-bold text-slate-900">
+                {selectedCampaignForDisbursement?.title}
+              </div>
+              {isLoadingLimit ? (
+                <div className="flex items-center gap-2 text-slate-500 py-1">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-600" /> Memeriksa batas limit pencairan dari blockchain...
+                </div>
+              ) : disbursementLimit ? (
+                <div className="grid grid-cols-3 gap-2 pt-1 border-t border-slate-200">
+                  <div>
+                    <span className="text-[10px] text-slate-500 block">Total Terkumpul:</span>
+                    <span className="font-mono font-bold text-slate-900">{disbursementLimit.total_raised_eth || "0"} ETH</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-500 block">Dicadangkan:</span>
+                    <span className="font-mono font-bold text-amber-700">{disbursementLimit.reserved_eth || "0"} ETH</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-500 block">Tersedia Dicairkan:</span>
+                    <span className="font-mono font-bold text-emerald-700">{disbursementLimit.available_eth || "0"} ETH</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-[11px] text-slate-500">
+                  Target Kampanye: {selectedCampaignForDisbursement?.target_amount || "0"} ETH
+                </div>
+              )}
+            </div>
+
+            {/* Input Nominal Pencairan (ETH) */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center">
+                <Label htmlFor="reqAmount" className="text-xs font-semibold text-slate-900">
+                  Nominal Pencairan (ETH)
+                </Label>
+                {disbursementLimit && (
+                  <button
+                    type="button"
+                    onClick={() => setRequestAmountEth(String(disbursementLimit.available_eth || "0"))}
+                    className="text-[11px] text-emerald-600 hover:underline font-semibold"
+                  >
+                    Maks: {disbursementLimit.available_eth} ETH
+                  </button>
+                )}
+              </div>
+              <div className="relative">
+                <Input
+                  id="reqAmount"
+                  type="text"
+                  placeholder="Contoh: 0.25"
+                  value={requestAmountEth}
+                  onChange={(e) => setRequestAmountEth(e.target.value)}
+                  className="pr-12 font-mono text-xs font-bold rounded-lg border-slate-200"
+                  required
+                />
+                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-bold text-xs text-emerald-700">
+                  ETH
+                </span>
+              </div>
+            </div>
+
+            {/* Input Proof URL */}
+            <div className="space-y-1.5">
+              <Label htmlFor="reqProof" className="text-xs font-semibold text-slate-900">
+                Tautan Bukti / Rencana Penyaluran (URL Bukti / RAB / Kwitansi)
+              </Label>
+              <Input
+                id="reqProof"
+                type="url"
+                placeholder="https://example.com/bukti-pembelian-sembako.pdf"
+                value={requestProofUrl}
+                onChange={(e) => setRequestProofUrl(e.target.value)}
+                className="text-xs rounded-lg border-slate-200"
+                required
+              />
+              <span className="text-[11px] text-slate-500 block">
+                Unggah invoice, RAB, atau foto nota belanja bantuan korban bencana.
+              </span>
+            </div>
+
+            {/* Input Deskripsi / Tujuan */}
+            <div className="space-y-1.5">
+              <Label htmlFor="reqDesc" className="text-xs font-semibold text-slate-900">
+                Deskripsi Rincian Kebutuhan Lapangan
+              </Label>
+              <textarea
+                id="reqDesc"
+                rows={3}
+                placeholder="Jelaskan kebutuhan pengadaan sembako, sewa perahu evakuasi, dan pendistribusian obat-obatan bagi posko pengungsian..."
+                value={requestDescription}
+                onChange={(e) => setRequestDescription(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 bg-white p-3 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-600"
+                required
+              />
+            </div>
+
+            <DialogFooter className="pt-2 flex flex-col sm:flex-row gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isSubmittingDisbursement}
+                onClick={() => setIsRequestDisbursementOpen(false)}
+                className="w-full sm:w-auto text-xs font-semibold rounded-lg border-slate-200"
+              >
+                Batal
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmittingDisbursement || isLoadingLimit}
+                className="w-full sm:flex-1 font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs gap-2 shadow-none"
+              >
+                {isSubmittingDisbursement ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Mengirim Pengajuan...
+                  </>
+                ) : (
+                  <>
+                    Kirim Pengajuan ke Admin <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 

@@ -71,6 +71,11 @@ import {
   getCampaignDonatursApi,
   getCampaignDisbursementsApi,
 } from "@/services/campaign"
+import {
+  getAllDisbursementsApi,
+  approveDisbursementApi,
+  rejectDisbursementApi,
+} from "@/services/disbursement"
 
 export default function AdminPage() {
   const router = useRouter()
@@ -135,10 +140,21 @@ export default function AdminPage() {
   const [donatursList, setDonatursList] = useState([])
   const [isLoadingDonaturs, setIsLoadingDonaturs] = useState(false)
 
-  // 6. Disbursements Modal State
+  // 6. Disbursements Modal State (Single Campaign)
   const [isDisbursementsDialogOpen, setIsDisbursementsDialogOpen] = useState(false)
   const [disbursementsList, setDisbursementsList] = useState([])
   const [isLoadingDisbursements, setIsLoadingDisbursements] = useState(false)
+
+  // ================= TAB 3: DISBURSEMENTS MODERATION STATE =================
+  const [allDisbursementsList, setAllDisbursementsList] = useState([])
+  const [isLoadingAllDisbursements, setIsLoadingAllDisbursements] = useState(false)
+  const [disbursementSearchTerm, setDisbursementSearchTerm] = useState("")
+  const [disbursementStatusFilter, setDisbursementStatusFilter] = useState("ALL")
+  const [isRejectDisbursementOpen, setIsRejectDisbursementOpen] = useState(false)
+  const [selectedDisbursementToReject, setSelectedDisbursementToReject] = useState(null)
+  const [disbursementRejectReason, setDisbursementRejectReason] = useState("")
+  const [isSubmittingDisbursementReject, setIsSubmittingDisbursementReject] = useState(false)
+  const [isApprovingDisbursementId, setIsApprovingDisbursementId] = useState(null)
 
   // Global Notification states
   const [successMessage, setSuccessMessage] = useState("")
@@ -194,13 +210,87 @@ export default function AdminPage() {
     }
   }
 
+  // Load all disbursements (GET /api/v1/disbursements)
+  const loadAllDisbursements = async (status = disbursementStatusFilter) => {
+    if (!token) return
+    setIsLoadingAllDisbursements(true)
+    try {
+      const res = await getAllDisbursementsApi(status === "ALL" ? undefined : status, token)
+      if (res.success && Array.isArray(res.data)) {
+        setAllDisbursementsList(res.data)
+      } else {
+        setAllDisbursementsList([])
+      }
+    } catch (e) {
+      console.warn("Gagal memuat seluruh data pencairan:", e)
+      setAllDisbursementsList([])
+    } finally {
+      setIsLoadingAllDisbursements(false)
+    }
+  }
+
   useEffect(() => {
     if (isAuthenticated && user?.role === "ADMIN") {
       loadWallet()
       loadUsers()
       loadCampaigns()
+      loadAllDisbursements()
     }
-  }, [isAuthenticated, user?.role, token, campaignStatusFilter])
+  }, [isAuthenticated, user?.role, token, campaignStatusFilter, disbursementStatusFilter])
+
+  // Approve Disbursement (PATCH /api/v1/disbursements/{id}/approve)
+  const handleApproveDisbursement = async (dis) => {
+    if (!dis?.id) return
+    setIsApprovingDisbursementId(dis.id)
+    setErrorMessage("")
+    setSuccessMessage("")
+    try {
+      const res = await approveDisbursementApi(dis.id, token)
+      if (res.success && res.data) {
+        setSuccessMessage(
+          `Pencairan dana ${dis.amount} ETH untuk "${dis.campaign?.title || 'kampanye'}" berhasil disetujui! Transaksi transfer dana diproses di blockchain Sepolia.`
+        )
+        loadAllDisbursements()
+        loadWallet()
+      } else {
+        setErrorMessage(res.message || res.errors || "Gagal menyetujui pencairan dana")
+      }
+    } catch (err) {
+      setErrorMessage(err.message || "Terjadi kendala saat memproses persetujuan pencairan dana")
+    } finally {
+      setIsApprovingDisbursementId(null)
+    }
+  }
+
+  // Open Reject Disbursement Dialog
+  const openRejectDisbursementDialog = (dis) => {
+    setSelectedDisbursementToReject(dis)
+    setDisbursementRejectReason("")
+    setIsRejectDisbursementOpen(true)
+  }
+
+  // Submit Reject Disbursement (PATCH /api/v1/disbursements/{id}/reject)
+  const handleRejectDisbursementSubmit = async (e) => {
+    e.preventDefault()
+    if (!selectedDisbursementToReject?.id || !disbursementRejectReason.trim()) return
+    setIsSubmittingDisbursementReject(true)
+    setErrorMessage("")
+    setSuccessMessage("")
+    try {
+      const res = await rejectDisbursementApi(selectedDisbursementToReject.id, disbursementRejectReason.trim(), token)
+      if (res.success) {
+        setSuccessMessage(`Pengajuan pencairan dana resmi ditolak. Catatan tersimpan untuk inisiator.`)
+        setIsRejectDisbursementOpen(false)
+        loadAllDisbursements()
+      } else {
+        setErrorMessage(res.message || res.errors || "Gagal menolak pengajuan pencairan dana")
+      }
+    } catch (err) {
+      setErrorMessage(err.message || "Terjadi kesalahan saat menolak pengajuan pencairan dana")
+    } finally {
+      setIsSubmittingDisbursementReject(false)
+    }
+  }
 
   const handleCopyWallet = (address) => {
     if (address) {
@@ -458,11 +548,26 @@ export default function AdminPage() {
     })
   }, [campaignsList, campaignSearchTerm, campaignStatusFilter])
 
+  // Filtered Disbursements (Tab 3)
+  const filteredDisbursements = useMemo(() => {
+    return allDisbursementsList.filter((item) => {
+      const titleMatch = (item.campaign?.title || "").toLowerCase().includes(disbursementSearchTerm.toLowerCase())
+      const userMatch =
+        (item.user?.name || "").toLowerCase().includes(disbursementSearchTerm.toLowerCase()) ||
+        (item.user?.wallet_address || "").toLowerCase().includes(disbursementSearchTerm.toLowerCase())
+      const descMatch = (item.description || "").toLowerCase().includes(disbursementSearchTerm.toLowerCase())
+      const matchSearch = !disbursementSearchTerm.trim() || titleMatch || userMatch || descMatch
+      const matchStatus = disbursementStatusFilter === "ALL" || item.status === disbursementStatusFilter
+      return matchSearch && matchStatus
+    })
+  }, [allDisbursementsList, disbursementSearchTerm, disbursementStatusFilter])
+
   // Counters
   const countPending = campaignsList.filter((c) => c.status === "PENDING").length
   const countActive = campaignsList.filter((c) => c.status === "ACTIVE" || c.status === "APPROVED").length
   const countClosed = campaignsList.filter((c) => c.status === "CLOSED").length
   const countRejected = campaignsList.filter((c) => c.status === "REJECTED").length
+  const countPendingDisbursements = allDisbursementsList.filter((d) => d.status === "PENDING").length
 
   const getCampaignStatusBadge = (status) => {
     switch (status) {
@@ -590,16 +695,8 @@ export default function AdminPage() {
   return (
     <div className="container mx-auto px-4 sm:px-6 py-8 max-w-7xl space-y-6">
       {/* Top Banner / Header */}
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pb-4 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pb-4 ">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <Badge className="bg-slate-100 text-slate-800 border-slate-200 font-semibold text-xs flex items-center gap-1 rounded-md">
-              <ShieldCheck className="h-3.5 w-3.5 text-slate-600" /> Panel Kontrol Administrator
-            </Badge>
-            <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 text-[10px] font-semibold rounded-md">
-              Role: ADMIN
-            </Badge>
-          </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
             Pusat Kendali Sistem & Moderasi
           </h1>
@@ -614,13 +711,14 @@ export default function AdminPage() {
             size="sm"
             onClick={() => {
               if (activeTab === "campaigns") loadCampaigns()
-              else loadUsers()
+              else if (activeTab === "users") loadUsers()
+              else loadAllDisbursements()
             }}
-            disabled={isLoadingCampaigns || isLoadingUsers}
+            disabled={isLoadingCampaigns || isLoadingUsers || isLoadingAllDisbursements}
             className="rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold gap-1.5"
           >
-            <RefreshCw className={`h-3.5 w-3.5 text-slate-600 ${isLoadingCampaigns || isLoadingUsers ? "animate-spin" : ""}`} />
-            Segarkan Data
+            <RefreshCw className={`h-3.5 w-3.5 text-slate-600 ${isLoadingCampaigns || isLoadingUsers || isLoadingAllDisbursements ? "animate-spin" : ""}`} />
+            Refresh Data
           </Button>
         </div>
       </div>
@@ -751,6 +849,26 @@ export default function AdminPage() {
           <span className="bg-slate-200 text-slate-800 px-1.5 py-0.2 rounded-md text-[10px] font-semibold">
             {usersList.length}
           </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab("disbursements")
+            loadAllDisbursements()
+          }}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg font-semibold text-xs transition-colors ${
+            activeTab === "disbursements"
+              ? "bg-emerald-600 text-white"
+              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+          }`}
+        >
+          <DollarSign className="h-4 w-4" /> Moderasi Pencairan Dana
+          {countPendingDisbursements > 0 && (
+            <span className="bg-amber-400 text-amber-950 px-1.5 py-0.2 rounded-md text-[10px] font-bold">
+              {countPendingDisbursements}
+            </span>
+          )}
         </button>
       </div>
 
@@ -1140,7 +1258,255 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* ================= MODAL 1: TOLAK KAMPANYE ================= */}
+      {/* ================= TAB 3: MODERASI PENCAIRAN DANA ================= */}
+      {activeTab === "disbursements" && (
+        <div className="space-y-6">
+          {/* Metric Summary Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <Card className="rounded-lg border border-slate-200 bg-white p-4 shadow-none">
+              <span className="text-[11px] font-semibold text-slate-500 uppercase">Total Pengajuan</span>
+              <div className="text-2xl font-bold text-slate-900 mt-1">{allDisbursementsList.length}</div>
+              <span className="text-[10px] text-slate-500">Semua riwayat pengajuan</span>
+            </Card>
+
+            <Card className="rounded-lg border border-slate-200 bg-white p-4 shadow-none">
+              <span className="text-[11px] font-semibold text-amber-700 uppercase">Menunggu Persetujuan</span>
+              <div className="text-2xl font-bold text-slate-900 mt-1">{countPendingDisbursements}</div>
+              <span className="text-[10px] text-amber-700">Perlu tindakan verifikasi admin</span>
+            </Card>
+
+            <Card className="rounded-lg border border-slate-200 bg-white p-4 shadow-none">
+              <span className="text-[11px] font-semibold text-emerald-700 uppercase">Disetujui / Dicairkan</span>
+              <div className="text-2xl font-bold text-slate-900 mt-1">
+                {allDisbursementsList.filter((d) => d.status === "APPROVED" || d.status === "EXECUTED").length}
+              </div>
+              <span className="text-[10px] text-emerald-700">Telah ditransfer ke wallet</span>
+            </Card>
+
+            <Card className="rounded-lg border border-slate-200 bg-white p-4 shadow-none">
+              <span className="text-[11px] font-semibold text-rose-700 uppercase">Ditolak</span>
+              <div className="text-2xl font-bold text-slate-900 mt-1">
+                {allDisbursementsList.filter((d) => d.status === "REJECTED").length}
+              </div>
+              <span className="text-[10px] text-rose-700">Pengajuan tidak memenuhi syarat</span>
+            </Card>
+          </div>
+
+          {/* Search & Filter Bar */}
+          <Card className="rounded-lg border border-slate-200 bg-white p-4 shadow-none">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="relative w-full md:w-80">
+                <Search className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Input
+                  placeholder="Cari kampanye, inisiator, atau keterangan..."
+                  value={disbursementSearchTerm}
+                  onChange={(e) => setDisbursementSearchTerm(e.target.value)}
+                  className="pl-9 text-xs rounded-lg border-slate-200"
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                  <Filter className="h-3 w-3" /> Status:
+                </span>
+                {["ALL", "PENDING", "APPROVED", "EXECUTED", "REJECTED"].map((st) => (
+                  <Button
+                    key={st}
+                    variant={disbursementStatusFilter === st ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => {
+                      setDisbursementStatusFilter(st)
+                      loadAllDisbursements(st)
+                    }}
+                    className={`rounded-lg text-[11px] h-8 px-3 font-semibold ${
+                      disbursementStatusFilter === st
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-none"
+                        : "border-slate-200 text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    {st === "ALL" ? "SEMUA" : st}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </Card>
+
+          {/* Disbursements Table */}
+          <Card className="rounded-lg border border-slate-200 bg-white shadow-none overflow-hidden">
+            <CardHeader className="p-5 pb-3 border-b border-slate-100 flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-emerald-600" /> Moderasi Pencairan Dana Bencana (GET /api/v1/disbursements)
+                </CardTitle>
+                <CardDescription className="text-xs text-slate-500">
+                  Menampilkan {filteredDisbursements.length} pengajuan pencairan dana bencana
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              {isLoadingAllDisbursements ? (
+                <div className="p-12 text-center space-y-3">
+                  <Loader2 className="h-8 w-8 animate-spin text-emerald-600 mx-auto" />
+                  <p className="text-xs text-slate-500">Memuat catatan pencairan dana...</p>
+                </div>
+              ) : filteredDisbursements.length === 0 ? (
+                <div className="p-12 text-center space-y-2">
+                  <DollarSign className="h-10 w-10 text-slate-300 mx-auto" />
+                  <p className="text-sm font-bold text-slate-900">Tidak Ada Pengajuan Pencairan Ditemukan</p>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                    Belum ada inisiator yang mengajukan pencairan dana pada filter yang dipilih.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-slate-50 border-b border-slate-200">
+                        <TableHead className="text-xs font-semibold text-slate-700">Program Bencana</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-700">Inisiator Pemohon</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-700">Nominal (ETH)</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-700">Keperluan Logistik</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-700">Bukti / Dokumen</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-700">Status</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-700">Tx On-Chain</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-700">Tanggal</TableHead>
+                        <TableHead className="text-xs font-semibold text-slate-700 text-right">Aksi Moderasi</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredDisbursements.map((dis) => (
+                        <TableRow key={dis.id} className="hover:bg-slate-50/50 border-b border-slate-100 transition-colors">
+                          <TableCell className="p-3 font-medium text-xs text-slate-900 max-w-[180px]">
+                            <div className="font-bold truncate">{dis.campaign?.title || dis.campaign_id || "-"}</div>
+                            <div className="font-mono text-[10px] text-slate-500">ID: {dis.campaign_id?.slice(0, 10)}...</div>
+                          </TableCell>
+                          <TableCell className="p-3 text-xs">
+                            <div className="font-bold text-slate-900">{dis.user?.name || "Inisiator"}</div>
+                            <div className="flex items-center gap-1 font-mono text-[11px] text-slate-500">
+                              <span>{formatAddress(dis.user?.wallet_address)}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyWallet(dis.user?.wallet_address)}
+                                className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer"
+                              >
+                                {copiedAddress === dis.user?.wallet_address ? (
+                                  <Check className="h-3 w-3 text-emerald-600" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
+                              </button>
+                            </div>
+                          </TableCell>
+                          <TableCell className="p-3 font-mono font-bold text-xs text-emerald-700 whitespace-nowrap">
+                            {dis.amount} ETH
+                          </TableCell>
+                          <TableCell className="p-3 text-xs text-slate-600 max-w-[200px]">
+                            <p className="line-clamp-2">{dis.description || "-"}</p>
+                            {dis.status === "REJECTED" && dis.rejection_reason && (
+                              <p className="text-[10px] text-rose-700 font-medium mt-1">
+                                Catatan Tolak: {dis.rejection_reason}
+                              </p>
+                            )}
+                          </TableCell>
+                          <TableCell className="p-3">
+                            {dis.proof_url ? (
+                              <a
+                                href={dis.proof_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-emerald-700 hover:text-emerald-800 font-semibold inline-flex items-center gap-1 text-[11px]"
+                              >
+                                Buka Dokumen <ExternalLink className="h-3 w-3" />
+                              </a>
+                            ) : (
+                              <span className="text-slate-400 text-xs">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="p-3 whitespace-nowrap">
+                            {dis.status === "PENDING" && (
+                              <Badge className="bg-amber-100 text-amber-900 border-amber-300 text-[10px] font-bold">
+                                MENUNGGU
+                              </Badge>
+                            )}
+                            {dis.status === "APPROVED" && (
+                              <Badge className="bg-blue-100 text-blue-900 border-blue-300 text-[10px] font-bold">
+                                DISETUJUI
+                              </Badge>
+                            )}
+                            {(dis.status === "EXECUTED" || dis.status === "COMPLETED") && (
+                              <Badge className="bg-emerald-100 text-emerald-900 border-emerald-300 text-[10px] font-bold">
+                                SELESAI ON-CHAIN
+                              </Badge>
+                            )}
+                            {dis.status === "REJECTED" && (
+                              <Badge className="bg-rose-100 text-rose-900 border-rose-300 text-[10px] font-bold">
+                                DITOLAK
+                              </Badge>
+                            )}
+                            {!["PENDING", "APPROVED", "EXECUTED", "COMPLETED", "REJECTED"].includes(dis.status) && (
+                              <Badge variant="outline" className="text-[10px]">
+                                {dis.status}
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="p-3 whitespace-nowrap">
+                            {dis.tx_hash || dis.tx_url ? (
+                              <a
+                                href={dis.tx_url || `https://sepolia.etherscan.io/tx/${dis.tx_hash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-mono text-[10px] text-emerald-700 hover:underline inline-flex items-center gap-1"
+                              >
+                                {formatAddress(dis.tx_hash || "0x0000")} <ExternalLink className="h-2.5 w-2.5" />
+                              </a>
+                            ) : (
+                              <span className="text-slate-400 font-mono text-[11px]">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="p-3 text-[11px] text-slate-500 whitespace-nowrap">
+                            {dis.created_at ? formatDate(dis.created_at) : "-"}
+                          </TableCell>
+                          <TableCell className="p-3 text-right whitespace-nowrap">
+                            {dis.status === "PENDING" ? (
+                              <div className="flex items-center justify-end gap-1.5">
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleApproveDisbursement(dis)}
+                                  disabled={isApprovingDisbursementId === dis.id}
+                                  className="h-7 px-2.5 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-none gap-1"
+                                  title="Setujui Pencairan (PATCH /disbursements/{id}/approve)"
+                                >
+                                  {isApprovingDisbursementId === dis.id ? (
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  ) : (
+                                    <Check className="h-3 w-3" />
+                                  )}
+                                  Setujui
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openRejectDisbursementDialog(dis)}
+                                  className="h-7 px-2.5 text-[11px] font-semibold border-rose-200 text-rose-700 hover:bg-rose-50 rounded-lg gap-1"
+                                  title="Tolak Pencairan (PATCH /disbursements/{id}/reject)"
+                                >
+                                  <XCircle className="h-3 w-3" /> Tolak
+                                </Button>
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-slate-400 italic">Selesai Ditinjau</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
       <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
         <DialogContent className="max-w-md p-6 rounded-lg border border-slate-200 shadow-lg bg-white">
           <DialogHeader className="text-left space-y-1">
@@ -1638,6 +2004,90 @@ export default function AdminPage() {
               )}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ================= MODAL 8: TOLAK PENCAIRAN DANA (PATCH /disbursements/{id}/reject) ================= */}
+      <Dialog open={isRejectDisbursementOpen} onOpenChange={setIsRejectDisbursementOpen}>
+        <DialogContent className="max-w-md p-6 rounded-lg border border-slate-200 shadow-lg bg-white">
+          <form onSubmit={handleRejectDisbursementSubmit} className="space-y-4">
+            <DialogHeader className="text-left space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="h-9 w-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center">
+                  <Ban className="h-5 w-5" />
+                </div>
+                <div>
+                  <DialogTitle className="text-lg font-bold text-slate-900">
+                    Tolak Pengajuan Pencairan Dana
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-slate-500">
+                    API: <code className="font-mono text-[11px] bg-slate-100 px-1 rounded">PATCH /api/v1/disbursements/{selectedDisbursementToReject?.id}/reject</code>
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+
+            {selectedDisbursementToReject && (
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Program:</span>
+                  <span className="font-bold text-slate-900 truncate max-w-[200px]">
+                    {selectedDisbursementToReject.campaign?.title || "-"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Nominal:</span>
+                  <span className="font-mono font-bold text-emerald-700">{selectedDisbursementToReject.amount} ETH</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Pemohon:</span>
+                  <span className="text-slate-800">{selectedDisbursementToReject.user?.name || "Inisiator"}</span>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <Label htmlFor="disbRejectReason" className="text-xs font-semibold text-slate-900">
+                Alasan Penolakan Administratif
+              </Label>
+              <textarea
+                id="disbRejectReason"
+                rows={3}
+                placeholder="Jelaskan alasan penolakan, misalnya: bukti kwitansi belum jelas, RAB belum diverifikasi posko..."
+                value={disbursementRejectReason}
+                onChange={(e) => setDisbursementRejectReason(e.target.value)}
+                className="w-full rounded-lg border border-rose-200 bg-white p-3 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-rose-500"
+                required
+              />
+            </div>
+
+            <DialogFooter className="pt-2 flex flex-col sm:flex-row gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isSubmittingDisbursementReject}
+                onClick={() => setIsRejectDisbursementOpen(false)}
+                className="w-full sm:w-auto text-xs font-semibold rounded-lg border-slate-200"
+              >
+                Batal
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmittingDisbursementReject}
+                className="w-full sm:flex-1 font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs gap-2 shadow-none"
+              >
+                {isSubmittingDisbursementReject ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Menolak Pengajuan...
+                  </>
+                ) : (
+                  <>
+                    <Ban className="h-4 w-4" /> Konfirmasi Tolak Pengajuan
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

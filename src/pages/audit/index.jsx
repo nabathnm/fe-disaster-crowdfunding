@@ -28,14 +28,6 @@ export default function TransparencyAuditPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pb-4 border-b border-slate-200">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 text-xs font-semibold rounded-md">
-              Buku Kas Terbuka
-            </Badge>
-            <Badge variant="outline" className="text-xs text-slate-500 border-slate-200 rounded-md">
-              Akses Publik (Bebas Login)
-            </Badge>
-          </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
             Transparency Audit View
           </h1>
